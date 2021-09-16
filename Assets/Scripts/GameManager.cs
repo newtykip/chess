@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -67,7 +68,7 @@ public class GameManager : MonoBehaviour
 			for (var y = 0; y < TilesPerRow; y++)
 			{
 				// Create the tile
-				var tile = Instantiate(tilePrefab, new Vector3(x, y), Quaternion.identity, board.transform);
+				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
 				tile.name = $"{x},{y}";
 
 				// Handle dark tiles
@@ -97,7 +98,7 @@ public class GameManager : MonoBehaviour
 			foreach (var code in row)
 			{
 				px++;
-				var piece = Instantiate(piecePrefab, new Vector3(px, py, -1), Quaternion.identity, pieces.transform);
+				var piece = Instantiate(piecePrefab, new Vector3(px, py), Quaternion.identity, pieces.transform);
 				var spriteRenderer = piece.GetComponent<SpriteRenderer>();
 
 				spriteRenderer.sprite = code switch
@@ -116,6 +117,22 @@ public class GameManager : MonoBehaviour
 					'p' => whitePawn,
 					_ => spriteRenderer.sprite
 				};
+				
+				// Name the piece
+				var colour = Char.IsUpper(code) ? "Black" : "White";
+				
+				var pieceName = char.ToLower(code) switch
+				{
+					'r' => "Rook",
+					'n' => "Knight",
+					'b' => "Bishop",
+					'q' => "Queen",
+					'k' => "King",
+					'p' => "Pawn",
+					_ => "Unknown"
+				};
+
+				piece.name = $"{colour} {pieceName}";
 			}
 		}
 	}
