@@ -7,24 +7,39 @@ public class Piece : MonoBehaviour
     private Vector3 _screenPoint;
     private Vector3 _offset;
 
-    private void Start()
+    public void Start()
     {
         // Find and assign the game manager
         _manager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
     }
-    
-    void OnMouseDown()
+
+    // When the piece has been clicked
+    public void OnMouseDown()
     {
         // Handle the initial grabbing of the piece
-        _screenPoint = Camera.main.WorldToScreenPoint(gameObject.transform.position);
-        _offset = gameObject.transform.position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, _screenPoint.z));
+        var position = transform.position;
+        
+        _screenPoint = Camera.main.WorldToScreenPoint(position);
+        _offset = position - Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, _screenPoint.z));
     }
  
     // Handle the dragging of the piece
-    void OnMouseDrag()
+    public void OnMouseDrag()
     {
-        Vector3 curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, _screenPoint.z);
-        Vector3 curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + _offset;
+        var curScreenPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, _screenPoint.z);
+        var curPosition = Camera.main.ScreenToWorldPoint(curScreenPoint) + _offset;
+        
         transform.position = curPosition;
+    }
+    
+    // When the mouse has been released
+    public void OnMouseUp()
+    {
+        // Snap to the nearest block
+        var position = transform.position;
+        var x = Mathf.Round(position.x);
+        var y = Mathf.Round(position.y);
+
+        transform.position = new Vector3(x, y, position.z);
     }
 }
