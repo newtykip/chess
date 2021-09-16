@@ -73,14 +73,12 @@ public class GameManager : MonoBehaviour
 
 				// Handle dark tiles
 				var isDark = (x + y) % 2 == 0;
-
-				if (isDark)
-				{
-					var spriteRenderer = tile.GetComponent<SpriteRenderer>();
-					ColorUtility.TryParseHtmlString("#b48866", out var colour);
-
-					spriteRenderer.color = colour;
-				}
+				if (!isDark) continue;
+				
+				var spriteRenderer = tile.GetComponent<SpriteRenderer>();
+				ColorUtility.TryParseHtmlString("#b48866", out var colour);
+				
+				spriteRenderer.color = colour;
 			}
 		}
 	}
@@ -98,7 +96,11 @@ public class GameManager : MonoBehaviour
 			foreach (var code in row)
 			{
 				px++;
+				
 				var piece = Instantiate(piecePrefab, new Vector3(px, py), Quaternion.identity, pieces.transform);
+				piece.name = GetPieceName(code);
+				
+				// Apply the relevant sprite
 				var spriteRenderer = piece.GetComponent<SpriteRenderer>();
 
 				spriteRenderer.sprite = code switch
@@ -117,24 +119,26 @@ public class GameManager : MonoBehaviour
 					'p' => whitePawn,
 					_ => spriteRenderer.sprite
 				};
-				
-				// Name the piece
-				var colour = Char.IsUpper(code) ? "Black" : "White";
-				
-				var pieceName = char.ToLower(code) switch
-				{
-					'r' => "Rook",
-					'n' => "Knight",
-					'b' => "Bishop",
-					'q' => "Queen",
-					'k' => "King",
-					'p' => "Pawn",
-					_ => "Unknown"
-				};
-
-				piece.name = $"{colour} {pieceName}";
 			}
 		}
+	}
+
+	private string GetPieceName(char code)
+	{
+		var colour = char.IsUpper(code) ? "Black" : "White";
+				
+		var pieceName = char.ToLower(code) switch
+		{
+			'r' => "Rook",
+			'n' => "Knight",
+			'b' => "Bishop",
+			'q' => "Queen",
+			'k' => "King",
+			'p' => "Pawn",
+			_ => "Unknown"
+		};
+
+		return $"{colour} {pieceName}";
 	}
 }
 
