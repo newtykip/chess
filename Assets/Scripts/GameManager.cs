@@ -50,6 +50,15 @@ public class GameManager : MonoBehaviour
 		DrawPieces();
 	}
 
+	public void Update()
+	{
+		// Handle global keybinds
+		if (Input.GetKeyDown("escape"))
+		{
+			Application.Quit();
+		}
+	}
+
 	// Draws the board's tiles
 	private void DrawTiles()
 	{
