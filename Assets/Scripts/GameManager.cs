@@ -10,8 +10,7 @@ public class GameManager : MonoBehaviour
 	public GameObject pieces;
 	public bool whiteTurn = true;
 	
-	private const int RowCount = 8;
-	private const int TilesPerRow = 8;
+	private const int BoardSize = 8;
 
 	private readonly List<string> _startingPosition = new List<string>()
 	{
@@ -63,9 +62,9 @@ public class GameManager : MonoBehaviour
 	// Draws the board's tiles
 	private void DrawTiles()
 	{
-		for (var x = 0; x < RowCount; x++)
+		for (var x = 1; x < BoardSize + 1; x++)
 		{
-			for (var y = 0; y < TilesPerRow; y++)
+			for (var y = 1; y < BoardSize + 1; y++)
 			{
 				// Create the tile
 				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
@@ -86,17 +85,17 @@ public class GameManager : MonoBehaviour
 	// Draws the board's pieces
 	private void DrawPieces()
 	{
-		var py = -1;
+		var py = 0;
 		
 		foreach (var row in _startingPosition)
 		{
 			py++;
-			var px = -1;
+			var px = 0;
 			
 			foreach (var code in row)
 			{
 				px++;
-				
+
 				var piece = Instantiate(piecePrefab, new Vector3(px, py), Quaternion.identity, pieces.transform);
 				piece.name = GetPieceName(code);
 				
@@ -123,7 +122,7 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	private string GetPieceName(char code)
+	private static string GetPieceName(char code)
 	{
 		var colour = char.IsUpper(code) ? "Black" : "White";
 				
