@@ -5,12 +5,31 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
+    // Black Sprites
+    public Sprite blackRook;
+    public Sprite blackKnight;
+    public Sprite blackBishop;
+    public Sprite blackQueen;
+    public Sprite blackKing;
+    public Sprite blackPawn;
+	
+    // White Sprites
+    public Sprite whiteRook;
+    public Sprite whiteKnight;
+    public Sprite whiteBishop;
+    public Sprite whiteQueen;
+    public Sprite whiteKing;
+    public Sprite whitePawn;
+    
     private GameManager _manager;
     private Vector3 _mousePosition;
     private Vector3 _screenPoint;
     private Vector2 _oldPosition;
+    private SpriteRenderer _spriteRenderer;
+    
     private bool _isWhite;
     private string _pieceType;
+    public char code;
 
     public void Start()
     {
@@ -18,10 +37,33 @@ public class Piece : MonoBehaviour
         _manager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
         
         // Determine the piece's colour and type
-        _isWhite = gameObject.name.Contains("White");
-        _pieceType = _isWhite
-            ? gameObject.name.Split(new[] {"White"}, StringSplitOptions.None)[1].Trim()
-            : gameObject.name.Split(new[] {"Black"}, StringSplitOptions.None)[1].Trim();
+        _isWhite = char.IsLower(code);
+        
+        _pieceType = char.ToLower(code) switch
+        {
+            'r' => "Rook",
+            'n' => "Knight",
+            'b' => "Bishop",
+            'q' => "Queen",
+            'k' => "King",
+            'p' => "Pawn",
+            _ => "Unknown"
+        };
+        
+        // Update the game object's name and sprite
+        gameObject.name = $"{(_isWhite ? "White" : "Black")} {_pieceType}";
+        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+
+        _spriteRenderer.sprite = _pieceType switch
+        {
+            "Rook" => _isWhite ? whiteRook : blackRook,
+            "Knight" => _isWhite ? whiteKnight : blackKnight,
+            "Bishop" => _isWhite ? whiteBishop : blackBishop,
+            "Queen" => _isWhite ? whiteQueen : blackQueen,
+            "King" => _isWhite ? whiteKing : blackKing,
+            "Pawn" => _isWhite ? whitePawn : blackPawn,
+            _ => _isWhite ? whitePawn : blackPawn
+        };
     }
     
     public void OnMouseDown()
