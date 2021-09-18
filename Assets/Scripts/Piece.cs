@@ -35,8 +35,12 @@ public class Piece : MonoBehaviour
         {
             case "Pawn":
                 // Move forward 1
-                moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + 1, 1));
-                // todo: Initial move forward 2
+                moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 1 : _oldPosition.y - 1, 1));
+                // Initial move forward 2
+                if ((_isWhite && _oldPosition.y == 2) || (!_isWhite && _oldPosition.y == _manager.boardSize - 1))
+                {
+                    moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 2 : _oldPosition.y - 2, 1));
+                }
                 // todo: En Passant
                 break;
             // todo: King
@@ -44,6 +48,26 @@ public class Piece : MonoBehaviour
             // todo: Bishop
             // todo: Knight
             // todo: Rook
+        }
+        
+        // Remove moves that would result in an overlap
+        var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+
+        for (var i = 0; i < moves.Count; i++)
+        {
+            var move = moves[i];
+            
+            for (var j = 0; j < allPieces.Length; j++)
+            {
+                var piece = allPieces[j];
+                var piecePosition = piece.transform.position;
+                piecePosition.z = 1;
+
+                if (piecePosition == move)
+                {
+                    moves.Remove(move);
+                }
+            }
         }
 
         // Create highlights for the moves

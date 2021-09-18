@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
 {
@@ -7,9 +8,9 @@ public class GameManager : MonoBehaviour
 	public GameObject board;
 	public GameObject piecePrefab;
 	public GameObject pieces;
+	
 	public bool whiteTurn = true;
-
-	private const int BoardSize = 8;
+	public int boardSize = 8;
 
 	private readonly List<string> _startingPosition = new List<string>()
 	{
@@ -61,9 +62,9 @@ public class GameManager : MonoBehaviour
 	// Draws the board's tiles
 	private void DrawTiles()
 	{
-		for (var x = 1; x < BoardSize + 1; x++)
+		for (var x = 1; x < boardSize + 1; x++)
 		{
-			for (var y = 1; y < BoardSize + 1; y++)
+			for (var y = 1; y < boardSize + 1; y++)
 			{
 				// Create the tile
 				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
