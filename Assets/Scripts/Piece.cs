@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -43,32 +44,49 @@ public class Piece : MonoBehaviour
                 }
                 // todo: En Passant
                 break;
-            // todo: King
+            case "King":
+                // x x x
+                // x K x
+                // x x x
+                for (var i = -1; i <= 1; i++)
+                {
+                    for (var j = -1; j <= 1; j++)
+                    {
+                        moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + j, 1));
+                    }
+                }
+                break;
             // todo: Queen
             // todo: Bishop
             // todo: Knight
             // todo: Rook
         }
-        
-        // Remove moves that would result in an overlap
+
+        // Filter moves
         var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+        var toRemove = new List<Vector3>();
 
         for (var i = 0; i < moves.Count; i++)
         {
-            var move = moves[i];
-            
             for (var j = 0; j < allPieces.Length; j++)
             {
+                var move = moves[i];
+                var isMoveOutOfBounds = move.x > _manager.boardSize || move.x < 1 || move.y > _manager.boardSize ||
+                                        move.y < 1;
                 var piece = allPieces[j];
                 var piecePosition = piece.transform.position;
                 piecePosition.z = 1;
 
-                if (piecePosition == move)
+                var isMoveOverlapping = move == piecePosition;
+
+                if (isMoveOverlapping || isMoveOutOfBounds)
                 {
-                    moves.Remove(move);
+                    toRemove.Add(move);
                 }
             }
         }
+
+        moves.RemoveAll(m => toRemove.Contains(m));
 
         // Create highlights for the moves
         var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
