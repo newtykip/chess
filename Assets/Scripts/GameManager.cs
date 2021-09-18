@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +8,7 @@ public class GameManager : MonoBehaviour
 	public GameObject piecePrefab;
 	public GameObject pieces;
 	public bool whiteTurn = true;
-	
+
 	private const int BoardSize = 8;
 
 	private readonly List<string> _startingPosition = new List<string>()
@@ -44,7 +43,7 @@ public class GameManager : MonoBehaviour
 	{
 		// Reverse the starting position because I want the list to mirror the board in the code kljfsadjkhsa
 		_startingPosition.Reverse();
-		
+
 		// Set up the board
 		DrawTiles();
 		DrawPieces();
@@ -70,15 +69,25 @@ public class GameManager : MonoBehaviour
 				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
 				tile.name = $"{x},{y}";
 
-				// Handle dark tiles
-				var isDark = (x + y) % 2 == 0;
-				if (!isDark) continue;
-				
-				var spriteRenderer = tile.GetComponent<SpriteRenderer>();
-				ColorUtility.TryParseHtmlString("#b48866", out var colour);
-				
-				spriteRenderer.color = colour;
+				// Colour tiles
+				ColourTile(tile);
 			}
+		}
+	}
+
+	public void ColourTile(GameObject tile)
+	{
+		var position = tile.transform.position;
+		var isDark = (position.x + position.y) % 2 == 0;
+		var spriteRenderer = tile.GetComponent<SpriteRenderer>();
+
+		if (isDark)
+		{
+			spriteRenderer.color = Tile.DarkColour;
+		}
+		else
+		{
+			spriteRenderer.color = Tile.LightColour;
 		}
 	}
 	
