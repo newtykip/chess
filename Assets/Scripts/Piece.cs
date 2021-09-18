@@ -56,7 +56,20 @@ public class Piece : MonoBehaviour
                     }
                 }
                 break;
-            // todo: Queen
+            case "Queen":
+                for (var i = 0; i < _manager.boardSize; i++)
+                {
+                    // Forward/Backwards
+                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
+                    // Left/Right
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
+                    // Vertical
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y - i, 1));
+                }
+                break;
             // todo: Bishop
             // todo: Knight
             // todo: Rook
@@ -68,20 +81,32 @@ public class Piece : MonoBehaviour
 
         for (var i = 0; i < moves.Count; i++)
         {
+            var move = moves[i];
+            
             for (var j = 0; j < allPieces.Length; j++)
             {
-                var move = moves[i];
-                var isMoveOutOfBounds = move.x > _manager.boardSize || move.x < 1 || move.y > _manager.boardSize ||
-                                        move.y < 1;
                 var piece = allPieces[j];
                 var piecePosition = piece.transform.position;
                 piecePosition.z = 1;
+                
+                // Check if the move is overlapping any friendly pieces
+                var pieceScript = piece.GetComponent<Piece>();
+                var isMoveOverlapping = move == piecePosition && pieceScript._isWhite == _isWhite;
+                
+                // Check if the move is out of bounds
+                var isMoveOutOfBounds = move.x > _manager.boardSize || move.x < 1 || move.y > _manager.boardSize ||
+                                        move.y < 1;
 
-                var isMoveOverlapping = move == piecePosition;
-
-                if (isMoveOverlapping || isMoveOutOfBounds)
+                if (isMoveOutOfBounds)
                 {
                     toRemove.Add(move);
+                }
+                
+                else if (isMoveOverlapping)
+                {
+                    toRemove.Add(move);
+                    
+                    // todo: make sure that pieces can not jump over others
                 }
             }
         }
