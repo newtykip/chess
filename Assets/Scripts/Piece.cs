@@ -28,7 +28,7 @@ public class Piece : MonoBehaviour
     {
         // Save the old piece position
         _oldPosition = transform.position;
-        
+
         // Figure out potential moves
         var moves = new List<Vector3>();
 
@@ -83,7 +83,6 @@ public class Piece : MonoBehaviour
                     moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y + i, 1));
                     moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y - i, 1));
                 }
-
                 break;
             case "Rook":
                 for (var i = 0; i < _manager.boardSize; i++)
@@ -91,13 +90,23 @@ public class Piece : MonoBehaviour
                     // Forward/Backwards
                     moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
                     moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
+                    
                     // Left/Right
                     moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
                     moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
                 }
-
                 break;
-            // todo: Knight
+            case "Knight":
+                // L
+                moves.Add(new Vector3(_oldPosition.x + 1, _oldPosition.y + 2, 1));
+                moves.Add(new Vector3(_oldPosition.x + 1, _oldPosition.y - 2, 1));
+                moves.Add(new Vector3(_oldPosition.x + 2, _oldPosition.y + 1, 1));
+                moves.Add(new Vector3(_oldPosition.x + 2, _oldPosition.y - 1, 1));
+                moves.Add(new Vector3(_oldPosition.x - 1, _oldPosition.y + 2, 1));
+                moves.Add(new Vector3(_oldPosition.x - 1, _oldPosition.y - 2, 1));
+                moves.Add(new Vector3(_oldPosition.x - 2, _oldPosition.y + 1, 1));
+                moves.Add(new Vector3(_oldPosition.x - 2, _oldPosition.y - 1, 1));
+                break;
         }
 
         // Filter moves
