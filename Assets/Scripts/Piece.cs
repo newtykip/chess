@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Xml.Schema;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -10,20 +9,57 @@ public class Piece : MonoBehaviour
     private Vector3 _screenPoint;
     private Vector2 _oldPosition;
     private bool _isWhite;
+    private string _pieceType;
 
     public void Start()
     {
         // Find and assign the game manager
         _manager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
         
-        // Determine the piece's colour
+        // Determine the piece's colour and type
         _isWhite = gameObject.name.Contains("White");
+        _pieceType = _isWhite
+            ? gameObject.name.Split(new[] {"White"}, StringSplitOptions.None)[1].Trim()
+            : gameObject.name.Split(new[] {"Black"}, StringSplitOptions.None)[1].Trim();
     }
     
     public void OnMouseDown()
     {
         // Save the old piece position
         _oldPosition = transform.position;
+        
+        // Figure out potential moves
+        var moves = new List<Vector3>();
+
+        switch (_pieceType)
+        {
+            case "Pawn":
+                // Move forward 1
+                moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + 1, 1));
+                // todo: Initial move forward 2
+                // todo: En Passant
+                break;
+            // todo: King
+            // todo: Queen
+            // todo: Bishop
+            // todo: Knight
+            // todo: Rook
+        }
+
+        // Create highlights for the moves
+        var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
+
+        foreach (var tile in allTiles)
+        {
+            foreach (var move in moves)
+            {
+                if (tile.transform.position == move)
+                {
+                    var spriteRenderer = tile.GetComponent<SpriteRenderer>();
+                    spriteRenderer.color = Tile.HighlightedColour;
+                }
+            }
+        }
     }
 
     public void OnMouseDrag()
@@ -37,6 +73,14 @@ public class Piece : MonoBehaviour
 
     public void OnMouseUp()
     {
+        // Clear all highlights
+        var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
+
+        foreach (var tile in allTiles)
+        {
+            _manager.ColourTile(tile);
+        }
+
         // Figure out the piece's new position
         var px = Mathf.Round(_mousePosition.x);
         var py = Mathf.Round(_mousePosition.y);
