@@ -68,30 +68,10 @@ public class GameManager : MonoBehaviour
 			{
 				// Create the tile
 				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
-				tile.name = $"{x},{y}";
-
-				// Colour tiles
-				ColourTile(tile);
 			}
 		}
 	}
 
-	public void ColourTile(GameObject tile)
-	{
-		var position = tile.transform.position;
-		var isDark = (position.x + position.y) % 2 == 0;
-		var spriteRenderer = tile.GetComponent<SpriteRenderer>();
-
-		if (isDark)
-		{
-			spriteRenderer.color = Tile.DarkColour;
-		}
-		else
-		{
-			spriteRenderer.color = Tile.LightColour;
-		}
-	}
-	
 	// Draws the board's pieces
 	private void DrawPieces()
 	{

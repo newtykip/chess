@@ -156,8 +156,8 @@ public class Piece : MonoBehaviour
             {
                 if (tile.transform.position == move)
                 {
-                    var spriteRenderer = tile.GetComponent<SpriteRenderer>();
-                    spriteRenderer.color = Tile.HighlightedColour;
+                    var tileScript = tile.GetComponent<Tile>();
+                    tileScript.Highlight();
                 }
             }
         }
@@ -179,7 +179,8 @@ public class Piece : MonoBehaviour
 
         foreach (var tile in allTiles)
         {
-            _manager.ColourTile(tile);
+            var tileScript = tile.GetComponent<Tile>();
+            tileScript.SetDefaultColour();
         }
 
         // Figure out the piece's new position
