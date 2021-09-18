@@ -62,17 +62,42 @@ public class Piece : MonoBehaviour
                     // Forward/Backwards
                     moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
                     moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
+                    
                     // Left/Right
                     moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
                     moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
+                    
                     // Vertical
                     moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + i, 1));
                     moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y - i, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y - i, 1));
                 }
                 break;
-            // todo: Bishop
+            case "Bishop":
+                for (var i = 0; i < _manager.boardSize; i++)
+                {
+                    // Vertical
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y - i, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y - i, 1));
+                }
+
+                break;
+            case "Rook":
+                for (var i = 0; i < _manager.boardSize; i++)
+                {
+                    // Forward/Backwards
+                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
+                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
+                    // Left/Right
+                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
+                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
+                }
+
+                break;
             // todo: Knight
-            // todo: Rook
         }
 
         // Filter moves
