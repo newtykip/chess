@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -26,7 +24,8 @@ public class Piece : MonoBehaviour
     private Vector3 _screenPoint;
     private Vector2 _oldPosition;
     private SpriteRenderer _spriteRenderer;
-    
+    private List<Vector3> moves = new List<Vector3>();
+
     private bool _isWhite;
     private string _pieceType;
     public char code;
@@ -72,8 +71,6 @@ public class Piece : MonoBehaviour
         _oldPosition = transform.position;
 
         // Figure out potential moves
-        var moves = new List<Vector3>();
-
         switch (_pieceType)
         {
             case "Pawn":
@@ -230,12 +227,17 @@ public class Piece : MonoBehaviour
         var py = Mathf.Round(_mousePosition.y);
         var newPosition = new Vector2(px, py);
         
-        // Ensure the position is in bounds of the board, that it has changed, and that it is the player's turn
+        // Check:
+        // - the position is in bounds
+        // - the position is different to what it previously was
+        // - that it is the player's turn
+        // - the move is legal
         var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
         var positionHasChanged = newPosition != _oldPosition;
         var isPlayersTurn = (_isWhite && _manager.whiteTurn) || (!_isWhite && !_manager.whiteTurn);
-        
-        if (isInBounds && positionHasChanged && isPlayersTurn)
+        var isMoveLegal = moves.Contains(new Vector3(newPosition.x, newPosition.y, 1));
+
+        if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
         {
             // Snap the piece
             transform.position = newPosition;
@@ -265,5 +267,8 @@ public class Piece : MonoBehaviour
         {
             transform.position = _oldPosition;
         }
+        
+        // Clear the moves
+        moves.Clear();
     }
 }
