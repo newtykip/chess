@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -18,23 +19,26 @@ public class Piece : MonoBehaviour
     public Sprite whiteQueen;
     public Sprite whiteKing;
     public Sprite whitePawn;
-    
-    private GameManager _manager;
+
+    private GameManager _gameManager;
     private Vector3 _mousePosition;
     private Vector3 _screenPoint;
     private Vector2 _oldPosition;
     private SpriteRenderer _spriteRenderer;
-    private List<Vector3> moves = new List<Vector3>();
-
+    private BoxCollider2D _boxCollider;
+    private List<Vector2> _moves = new List<Vector2>();
+    private readonly float _rayDistance = 11.5f;
     private bool _isWhite;
     private string _pieceType;
     public char code;
 
     public void Start()
     {
-        // Find and assign the game manager
-        _manager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
-        
+        // Get components
+        _gameManager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
+        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
+        _boxCollider = gameObject.GetComponent<BoxCollider2D>();
+
         // Determine the piece's colour and type
         _isWhite = char.IsLower(code);
         
@@ -51,7 +55,6 @@ public class Piece : MonoBehaviour
         
         // Update the game object's name and sprite
         gameObject.name = $"{(_isWhite ? "White" : "Black")} {_pieceType}";
-        _spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
 
         _spriteRenderer.sprite = _pieceType switch
         {
@@ -64,23 +67,26 @@ public class Piece : MonoBehaviour
             _ => _isWhite ? whitePawn : blackPawn
         };
     }
-    
+
     public void OnMouseDown()
     {
         // Save the old piece position
         _oldPosition = transform.position;
 
         // Figure out potential moves
+        var moves = new List<Vector2>();
+
         switch (_pieceType)
         {
             case "Pawn":
                 // Move forward 1
                 moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 1 : _oldPosition.y - 1, 1));
                 // Initial move forward 2
-                if ((_isWhite && _oldPosition.y == 2) || (!_isWhite && _oldPosition.y == _manager.boardSize - 1))
+                if ((_isWhite && _oldPosition.y == 2) || (!_isWhite && _oldPosition.y == _gameManager.boardSize - 1))
                 {
                     moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 2 : _oldPosition.y - 2, 1));
                 }
+
                 // todo: En Passant
                 break;
             case "King":
@@ -91,100 +97,138 @@ public class Piece : MonoBehaviour
                 {
                     for (var j = -1; j <= 1; j++)
                     {
-                        moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + j, 1));
+                        moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + j));
                     }
                 }
+
                 break;
             case "Queen":
-                for (var i = 0; i < _manager.boardSize; i++)
+                for (var i = 0; i < _gameManager.boardSize; i++)
                 {
                     // Forward/Backwards
-                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
-                    
+                    moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x, _oldPosition.y - i));
+
                     // Left/Right
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
-                    
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y));
+
                     // Vertical
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y - i, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y - i, 1));
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y - i));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y - i));
                 }
+
                 break;
             case "Bishop":
-                for (var i = 0; i < _manager.boardSize; i++)
+                for (var i = 0; i < _gameManager.boardSize; i++)
                 {
                     // Vertical
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y - i, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y - i, 1));
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y - i));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y - i));
                 }
+
                 break;
             case "Rook":
-                for (var i = 0; i < _manager.boardSize; i++)
+                for (var i = 0; i < _gameManager.boardSize; i++)
                 {
                     // Forward/Backwards
-                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y + i, 1));
-                    moves.Add(new Vector3(_oldPosition.x, _oldPosition.y - i, 1));
-                    
+                    moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
+                    moves.Add(new Vector2(_oldPosition.x, _oldPosition.y - i));
+
                     // Left/Right
-                    moves.Add(new Vector3(_oldPosition.x + i, _oldPosition.y, 1));
-                    moves.Add(new Vector3(_oldPosition.x - i, _oldPosition.y, 1));
+                    moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y));
+                    moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y));
                 }
+
                 break;
             case "Knight":
                 // L
-                moves.Add(new Vector3(_oldPosition.x + 1, _oldPosition.y + 2, 1));
-                moves.Add(new Vector3(_oldPosition.x + 1, _oldPosition.y - 2, 1));
-                moves.Add(new Vector3(_oldPosition.x + 2, _oldPosition.y + 1, 1));
-                moves.Add(new Vector3(_oldPosition.x + 2, _oldPosition.y - 1, 1));
-                moves.Add(new Vector3(_oldPosition.x - 1, _oldPosition.y + 2, 1));
-                moves.Add(new Vector3(_oldPosition.x - 1, _oldPosition.y - 2, 1));
-                moves.Add(new Vector3(_oldPosition.x - 2, _oldPosition.y + 1, 1));
-                moves.Add(new Vector3(_oldPosition.x - 2, _oldPosition.y - 1, 1));
+                moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y + 2));
+                moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y - 2));
+                moves.Add(new Vector2(_oldPosition.x + 2, _oldPosition.y + 1));
+                moves.Add(new Vector2(_oldPosition.x + 2, _oldPosition.y - 1));
+                moves.Add(new Vector2(_oldPosition.x - 1, _oldPosition.y + 2));
+                moves.Add(new Vector2(_oldPosition.x - 1, _oldPosition.y - 2));
+                moves.Add(new Vector2(_oldPosition.x - 2, _oldPosition.y + 1));
+                moves.Add(new Vector2(_oldPosition.x - 2, _oldPosition.y - 1));
                 break;
         }
 
         // Filter moves
         var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
-        var toRemove = new List<Vector3>();
 
-        for (var i = 0; i < moves.Count; i++)
+        foreach (var move in moves.ToArray())
         {
-            var move = moves[i];
-            
-            for (var j = 0; j < allPieces.Length; j++)
+            foreach (var piece in allPieces.ToArray())
             {
-                var piece = allPieces[j];
-                var piecePosition = piece.transform.position;
-                piecePosition.z = 1;
-                
+                var piecePosition = (Vector2) piece.transform.position;
+
                 // Check if the move is overlapping any friendly pieces
                 var pieceScript = piece.GetComponent<Piece>();
                 var isMoveOverlapping = move == piecePosition && pieceScript._isWhite == _isWhite;
-                
+
                 // Check if the move is out of bounds
-                var isMoveOutOfBounds = move.x > _manager.boardSize || move.x < 1 || move.y > _manager.boardSize ||
+                var isMoveOutOfBounds = move.x > _gameManager.boardSize || move.x < 1 ||
+                                        move.y > _gameManager.boardSize ||
                                         move.y < 1;
 
-                if (isMoveOutOfBounds)
+                if (isMoveOutOfBounds || isMoveOverlapping || move == _oldPosition)
                 {
-                    toRemove.Add(move);
-                }
-                
-                else if (isMoveOverlapping)
-                {
-                    toRemove.Add(move);
-                    
-                    // todo: make sure that pieces can not jump over others
+                    moves.Remove(move);
                 }
             }
         }
 
-        moves.RemoveAll(m => toRemove.Contains(m));
+        // Remove any moves where the piece would have to jump, unless the piece is a knight
+        if (_pieceType != "Knight")
+        {
+            for (var x = -1; x <= 1; x++)
+            {
+                for (var y = -1; y <= 1; y++)
+                {
+                    // Temporarily disable box colliders so that rays do not collide with the piece's own box collider
+                    _boxCollider.enabled = false;
+
+                    var direction = new Vector2(x, y);
+                    
+                    var bottomLeft = direction.Equals(Vector2.down + Vector2.left);
+                    var bottomRight = direction.Equals(Vector2.down + Vector2.right);
+                    var topLeft = direction.Equals(Vector2.up + Vector2.left);
+                    var topRight = direction.Equals(Vector2.up + Vector2.right);
+
+                    switch (_pieceType)
+                    {
+                        case "Rook":
+                            if (!(bottomLeft || bottomRight || topLeft || topRight))
+                            {
+                                var rookRay = DrawRay(direction);
+
+                                if (rookRay != null)
+                                {
+                                    moves = RookRayChecks(rookRay, direction, moves);
+                                }
+                            }
+
+                            break;
+                        case "Queen":
+                            var queenRay = DrawRay(direction);
+
+                            if (queenRay != null)
+                            {
+                                moves = RookRayChecks(queenRay, direction, moves);
+                            }
+
+                            break;
+                    }
+
+                    _boxCollider.enabled = true;
+                }
+            }
+        }
 
         // Create highlights for the moves
         var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
@@ -193,13 +237,14 @@ public class Piece : MonoBehaviour
         {
             foreach (var move in moves)
             {
-                if (tile.transform.position == move)
-                {
-                    var tileScript = tile.GetComponent<Tile>();
-                    tileScript.SetColor(true);
-                }
+                if ((Vector2) tile.transform.position != move) continue;
+
+                var tileScript = tile.GetComponent<Tile>();
+                tileScript.SetColor(true);
             }
         }
+
+        _moves = moves;
     }
 
     public void OnMouseDrag()
@@ -234,8 +279,8 @@ public class Piece : MonoBehaviour
         // - that the move is legal
         var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
         var positionHasChanged = newPosition != _oldPosition;
-        var isPlayersTurn = (_isWhite && _manager.whiteTurn) || (!_isWhite && !_manager.whiteTurn);
-        var isMoveLegal = moves.Contains(new Vector3(newPosition.x, newPosition.y, 1));
+        var isPlayersTurn = (_isWhite && _gameManager.whiteTurn) || (!_isWhite && !_gameManager.whiteTurn);
+        var isMoveLegal = _moves.Contains(new Vector2(newPosition.x, newPosition.y));
 
         if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
         {
@@ -243,7 +288,7 @@ public class Piece : MonoBehaviour
             transform.position = newPosition;
             
             // Play the place sound
-            _manager.audioManager.PlayPlace();
+            _gameManager.audioManager.PlayPlace();
 
             // Manage the taking of pieces!
             var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
@@ -264,7 +309,7 @@ public class Piece : MonoBehaviour
             }
 
             // Invert the turn variable
-            _manager.whiteTurn ^= true;
+            _gameManager.whiteTurn ^= true;
         }
         else
         {
@@ -272,6 +317,68 @@ public class Piece : MonoBehaviour
         }
         
         // Clear the moves
-        moves.Clear();
+        _moves.Clear();
+    }
+    
+    private Collider2D DrawRay(Vector2 direction)
+    {
+        var position = transform.position;
+        var hit = Physics2D.Raycast(position, direction, _rayDistance);
+        Debug.DrawRay(position, direction * _rayDistance, Color.red, 3);
+
+        return hit.collider;
+    }
+    
+    private List<Vector2> RookRayChecks(Collider2D ray, Vector2 direction, List<Vector2> moves)
+    {
+        var position = transform.position;
+        var collidedPosition = ray.transform.position;
+        
+        switch (direction.y)
+        {
+            // If a piece has hit a piece with its rays that is in front of it remove all of the moves ahead of the
+            // collided piece
+            case 1:
+                for (var i = 1; i < _gameManager.boardSize + 1; i++)
+                {
+                    moves.Remove(new Vector2(position.x, collidedPosition.y + i));
+                }
+                break;
+            
+            // If a piece has hit a piece with its rays that is behind of it, remove all of the moves behind the
+            // collided piece
+            case -1:
+                for (var i = 1; i < _gameManager.boardSize + 1; i++)
+                {
+                    moves.Remove(new Vector2(position.x, collidedPosition.y - i));
+                }
+
+                break;
+        }
+
+        switch (direction.x)
+        {
+            // If a piece hits a piece with its rays that is to the left of it, remove all of the moves to the left of the
+            // collided piece
+            case -1:
+                for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                {
+                    moves.Remove(new Vector2(collidedPosition.x - i, position.y));
+                }
+
+                break;
+            
+            // If a piece hits a piece with its rays that is to the right of it, remove all of the moves to the right of
+            // the collided piece
+            case 1:
+                for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                {
+                    moves.Remove(new Vector2(collidedPosition.x + i, position.y));
+                }
+
+                break;
+        }
+
+        return moves;
     }
 }
