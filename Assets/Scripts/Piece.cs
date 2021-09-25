@@ -194,7 +194,9 @@ public class Piece : MonoBehaviour
                     _boxCollider.enabled = false;
 
                     var direction = new Vector2(x, y);
-                    
+
+                    var up = direction.Equals(Vector2.up);
+                    var down = direction.Equals(Vector2.down);
                     var bottomLeft = direction.Equals(Vector2.down + Vector2.left);
                     var bottomRight = direction.Equals(Vector2.down + Vector2.right);
                     var topLeft = direction.Equals(Vector2.up + Vector2.left);
@@ -206,13 +208,17 @@ public class Piece : MonoBehaviour
                             if (!(bottomLeft || bottomRight || topLeft || topRight))
                             {
                                 var rookRay = DrawRay(direction);
-
-                                if (rookRay != null)
-                                {
-                                    moves = RookRayChecks(rookRay, direction, moves);
-                                }
+                                if (rookRay != null) moves = RookRayChecks(rookRay, direction, moves);
                             }
 
+                            break;
+                        case "Bishop":
+                            if (!(up || down))
+                            {
+                                var bishopRay = DrawRay(direction);
+                                if (bishopRay != null) moves = BishopRayChecks(bishopRay, direction, moves);
+                            }
+                            
                             break;
                         case "Queen":
                             var queenRay = DrawRay(direction);
@@ -220,6 +226,7 @@ public class Piece : MonoBehaviour
                             if (queenRay != null)
                             {
                                 moves = RookRayChecks(queenRay, direction, moves);
+                                moves = BishopRayChecks(queenRay, direction, moves);
                             }
 
                             break;
@@ -336,8 +343,7 @@ public class Piece : MonoBehaviour
         
         switch (direction.y)
         {
-            // If a piece has hit a piece with its rays that is in front of it remove all of the moves ahead of the
-            // collided piece
+            // If a piece has hits another piece with its top ray, remove all of the moves ahead of the collided piece
             case 1:
                 for (var i = 1; i < _gameManager.boardSize + 1; i++)
                 {
@@ -345,8 +351,7 @@ public class Piece : MonoBehaviour
                 }
                 break;
             
-            // If a piece has hit a piece with its rays that is behind of it, remove all of the moves behind the
-            // collided piece
+            // If a piece has hits another piece with its bottom ray, remove all of the moves behind the collided piece
             case -1:
                 for (var i = 1; i < _gameManager.boardSize + 1; i++)
                 {
@@ -358,8 +363,7 @@ public class Piece : MonoBehaviour
 
         switch (direction.x)
         {
-            // If a piece hits a piece with its rays that is to the left of it, remove all of the moves to the left of the
-            // collided piece
+            // If a piece hits another piece with its left ray, remove all of the moves to the left of the collided piece
             case -1:
                 for (var i = 0; i < _gameManager.boardSize + 1; i++)
                 {
@@ -368,8 +372,7 @@ public class Piece : MonoBehaviour
 
                 break;
             
-            // If a piece hits a piece with its rays that is to the right of it, remove all of the moves to the right of
-            // the collided piece
+            // If a piece hits another piece with its right ray, remove all of the moves to the right of the collided piece
             case 1:
                 for (var i = 0; i < _gameManager.boardSize + 1; i++)
                 {
@@ -378,6 +381,72 @@ public class Piece : MonoBehaviour
 
                 break;
         }
+
+        return moves;
+    }
+
+    private List<Vector2> BishopRayChecks(Collider2D ray, Vector2 direction, List<Vector2> moves)
+    {
+        var position = transform.position;
+        var collidedPosition = ray.transform.position;
+
+        switch (direction.y)
+        {
+            // If a piece hits a piece with its top...
+            // ...ray, remove all of the moves diagonally behind the collided piece
+            case 1:
+                switch (direction.x)
+                {
+                    // ...left...
+                    case -1:
+                        for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                        {
+                            moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y + i));
+                        }
+
+                        break;
+                    
+                    // ...right...
+                    case 1:
+                        for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                        {
+                            moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y + i));
+                        }
+
+                        break;
+                }
+
+                break;
+            
+            // If a piece hits a piece with its bottom...
+            // ...ray, remove all of the moves diagonally behind the collided piece
+            case -1:
+                switch (direction.x)
+                {
+                    // ...left...
+                    case -1:
+                        for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                        {
+                            moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y - i));
+                        }
+
+                        break;
+                    
+                    // ...right...
+                    case 1:
+                        for (var i = 0; i < _gameManager.boardSize + 1; i++)
+                        {
+                            moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y - i));
+                        }
+
+                        break;
+                }
+
+                break;
+        }
+        
+        // Add back the collided position to the moves, as it has to be takeable
+        if (_isWhite != ray.gameObject.GetComponent<Piece>()._isWhite) moves.Add(collidedPosition);
 
         return moves;
     }
