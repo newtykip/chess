@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
 	public GameObject board;
 	public GameObject piecePrefab;
 	public GameObject pieces;
+	public AudioManager audioManager;
 	
 	public bool whiteTurn = true;
 	public int boardSize = 8;
@@ -25,6 +26,9 @@ public class GameManager : MonoBehaviour
 
 	public void Start()
 	{
+		// Get the audio manager
+		audioManager = GetComponent<AudioManager>();
+		
 		// Reverse the starting position because I want the list to mirror the board in the code kljfsadjkhsa
 		_startingPosition.Reverse();
 

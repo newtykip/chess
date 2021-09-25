@@ -241,6 +241,9 @@ public class Piece : MonoBehaviour
         {
             // Snap the piece
             transform.position = newPosition;
+            
+            // Play the place sound
+            _manager.audioManager.PlayPlace();
 
             // Manage the taking of pieces!
             var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
