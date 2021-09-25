@@ -196,7 +196,7 @@ public class Piece : MonoBehaviour
                 if (tile.transform.position == move)
                 {
                     var tileScript = tile.GetComponent<Tile>();
-                    tileScript.Highlight();
+                    tileScript.SetColor(true);
                 }
             }
         }
@@ -219,7 +219,7 @@ public class Piece : MonoBehaviour
         foreach (var tile in allTiles)
         {
             var tileScript = tile.GetComponent<Tile>();
-            tileScript.SetDefaultColour();
+            tileScript.SetColor(false);
         }
 
         // Figure out the piece's new position
@@ -231,7 +231,7 @@ public class Piece : MonoBehaviour
         // - the position is in bounds
         // - the position is different to what it previously was
         // - that it is the player's turn
-        // - the move is legal
+        // - that the move is legal
         var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
         var positionHasChanged = newPosition != _oldPosition;
         var isPlayersTurn = (_isWhite && _manager.whiteTurn) || (!_isWhite && !_manager.whiteTurn);
