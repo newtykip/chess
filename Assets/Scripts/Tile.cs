@@ -3,37 +3,29 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
     private SpriteRenderer _spriteRenderer;
-
-    private readonly Color32 _lightColour = new Color32(240, 217, 183, 255);
-    private readonly Color32 _darkColour = new Color32(180, 136, 102, 255);
-    private readonly Color32 _lightHighlight = new Color32(140, 104, 76, 255);
-    private readonly Color32 _darkHighlight = new Color32(124, 91, 67, 255);
-
-    public bool isLight;
-    public bool highlighted = false;
+    private Color32 _defaultColour;
+    private Color32 _highlightColour;
 
     public void Start()
     {
         // Grab the sprite renderer
         _spriteRenderer = GetComponent<SpriteRenderer>();
         
-        // Colour the tile
+        // Figure out the tiles colours
         var position = transform.position;
-        isLight = (position.x + position.y) % 2 == 0;
-        SetDefaultColour();
+        var isLight = (position.x + position.y) % 2 == 0;
+        
+        _defaultColour = isLight ? new Color32(240, 217, 183, 255) : new Color32(180, 136, 102, 255);
+        _highlightColour = isLight ? new Color32(140, 104, 76, 255) : new Color32(124, 91, 67, 255);
+
+        _spriteRenderer.color = _defaultColour;
 
         // Name the tile
         gameObject.name = $"({position.x}, {position.y})";
     }
 
-    public void Highlight()
+    public void SetColor(bool highlighted)
     {
-        _spriteRenderer.color = isLight ? _lightHighlight : _darkHighlight;
-        highlighted ^= highlighted;
-    }
-
-    public void SetDefaultColour()
-    {
-        _spriteRenderer.color = isLight ? _lightColour : _darkColour;
+        _spriteRenderer.color = highlighted ? _highlightColour : _defaultColour;
     }
 }
