@@ -289,6 +289,9 @@ public class Piece : MonoBehaviour
             // Append the move to notation
             _gameManager.moveNotations.Add($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
             Debug.Log($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
+            
+            _gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
+            Debug.Log(_gameManager.Stockfish.GetBestMove());
 
             // Invert the turn variable
             _gameManager.whiteTurn ^= true;

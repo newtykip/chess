@@ -1,6 +1,11 @@
 name: Build Chess for all supported platforms
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+    
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
