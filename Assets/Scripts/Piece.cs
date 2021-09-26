@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -42,7 +41,7 @@ public class Piece : MonoBehaviour
     private bool _isWhite;
     private string _pieceType;
 
-    public bool drawRays = false;
+    public bool drawRays;
     public char code;
 
     public void Start()
@@ -65,7 +64,7 @@ public class Piece : MonoBehaviour
             'p' => "Pawn",
             _ => "Unknown"
         };
-        
+
         // Update the game object's name and sprite
         gameObject.name = $"{(_isWhite ? "White" : "Black")} {_pieceType}";
 
@@ -196,8 +195,7 @@ public class Piece : MonoBehaviour
             }
         }
 
-        // Remove any moves where the piece would have to jump, unless the piece is a knight
-        // Temporarily disable box colliders so that rays do not collide with the piece's own box collider
+        // Remove any moves where the piece would have to jump
         _boxCollider.enabled = false;
 
         moves = _pieceType switch
@@ -287,6 +285,10 @@ public class Piece : MonoBehaviour
 
                 Destroy(piece);
             }
+            
+            // Append the move to notation
+            _gameManager.moveNotations.Add($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
+            Debug.Log($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
 
             // Invert the turn variable
             _gameManager.whiteTurn ^= true;
@@ -298,6 +300,12 @@ public class Piece : MonoBehaviour
         
         // Clear the moves
         _moves.Clear();
+    }
+
+    private string GetAlgebraicNotation(Vector2 position)
+    {
+        var alpha = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
+        return $"{alpha[Mathf.RoundToInt(position.x) - 1]}{position.y}";
     }
     
     private Collider2D DrawRay(Vector2 direction, float distance, Color color)
@@ -432,7 +440,7 @@ public class Piece : MonoBehaviour
                         break;
                 }
 
-                // Add back the collided position to the moves, as it has to be takeable
+                // Add back the collided position to the moves, as it has to be capturable
                 if (_isWhite != ray.gameObject.GetComponent<Piece>()._isWhite) moves.Add(collidedPosition);
             }
         }

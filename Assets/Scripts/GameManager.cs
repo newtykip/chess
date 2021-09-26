@@ -10,7 +10,9 @@ public class GameManager : MonoBehaviour
 	public AudioManager audioManager;
 	
 	public bool whiteTurn = true;
+	public bool blackIsStockfish = true;
 	public int boardSize = 8;
+	public List<string> moveNotations = new List<string>();
 
 	private readonly List<string> _startingPosition = new List<string>()
 	{
@@ -38,7 +40,7 @@ public class GameManager : MonoBehaviour
 			for (var y = 1; y < boardSize + 1; y++)
 			{
 				// Create the tile
-				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
+				Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
 			}
 		}
 		
