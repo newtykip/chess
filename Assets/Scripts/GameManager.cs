@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
 		_startingPosition.Reverse();
 
 		// Start Stockfish
-		Stockfish = new Stockfish($"{Directory.GetCurrentDirectory()}\\Assets\\stockfish14.exe");
+		Stockfish = new Stockfish($"{Application.streamingAssetsPath}/stockfish14.exe");
 
 		// Draw the board's tiles
 		for (var x = 1; x < boardSize + 1; x++)

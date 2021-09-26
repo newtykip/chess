@@ -269,7 +269,7 @@ public class Piece : MonoBehaviour
 
             _gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
 
-            // Temporary Stockfish AI for black
+            // Temporary Stockfish AI for black 
             // todo: make this... better
             if (_gameManager.blackIsStockfish)
             {
