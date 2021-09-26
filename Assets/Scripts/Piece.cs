@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -38,6 +40,7 @@ public class Piece : MonoBehaviour
     private SpriteRenderer _spriteRenderer;
     private BoxCollider2D _boxCollider;
     private List<Vector2> _moves = new List<Vector2>();
+    private static char[] _alpha = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
     private bool _isWhite;
     private string _pieceType;
 
@@ -262,39 +265,31 @@ public class Piece : MonoBehaviour
 
         if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
         {
-            // Snap the piece
-            transform.position = newPosition;
-            
-            // Play the place sound
-            _gameManager.audioManager.PlayPlace();
+            MakeMove(gameObject, _oldPosition, newPosition);
 
-            // Manage the taking of pieces!
-            var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
-            
-            foreach (var piece in allPieces)
-            {
-                // Ensure that the piece does not delete itself
-                if (piece.transform.position != transform.position || piece == gameObject) continue;
-                
-                // Protect pieces from being taken by pieces of their own colour
-                if ((piece.GetComponent<Piece>()._isWhite && _isWhite) || (!piece.GetComponent<Piece>()._isWhite && !_isWhite))
-                {
-                    transform.position = _oldPosition;
-                    return;
-                }
-
-                Destroy(piece);
-            }
-            
-            // Append the move to notation
-            _gameManager.moveNotations.Add($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
-            Debug.Log($"{GetAlgebraicNotation(_oldPosition)}{GetAlgebraicNotation(newPosition)}");
-            
             _gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
-            Debug.Log(_gameManager.Stockfish.GetBestMove());
 
-            // Invert the turn variable
-            _gameManager.whiteTurn ^= true;
+            // Temporary Stockfish AI for black
+            // todo: make this... better
+            if (_gameManager.blackIsStockfish)
+            {
+                var k = 0f;
+                var blackMove = _gameManager.Stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
+                
+                var blackFrom = new Vector2(Array.IndexOf(_alpha, blackMove[0][0]) + 1, 0);
+                float.TryParse(blackMove[0][1].ToString(), out blackFrom.y);
+                
+                var blackTo = new Vector2(Array.IndexOf(_alpha, blackMove[1][0]) + 1, 0);
+                float.TryParse(blackMove[1][1].ToString(), out blackTo.y);
+
+                var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+                
+                foreach (var piece in allPieces)
+                {
+                    if ((Vector2) piece.transform.position != blackFrom) continue;
+                    MakeMove(piece, blackFrom, blackTo);
+                }
+            }
         }
         else
         {
@@ -305,10 +300,46 @@ public class Piece : MonoBehaviour
         _moves.Clear();
     }
 
-    private string GetAlgebraicNotation(Vector2 position)
+    private void MakeMove(GameObject piece, Vector2 oldPosition, Vector2 newPosition)
     {
-        var alpha = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
-        return $"{alpha[Mathf.RoundToInt(position.x) - 1]}{position.y}";
+        var pieceScript = piece.GetComponent<Piece>();
+        
+        // Move the piece
+        piece.transform.position = newPosition;
+            
+        // Play the place sound
+        _gameManager.audioManager.PlayPlace();
+
+        // Manage the taking of pieces!
+        var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+            
+        foreach (var p in allPieces)
+        {
+            var pScript = p.GetComponent<Piece>();
+
+            // Ensure that the piece does not delete itself
+            if (p.transform.position != piece.transform.position || p == piece) continue;
+                
+            // Protect pieces from being taken by pieces of their own colour
+            if (pScript._isWhite == pieceScript._isWhite)
+            {
+                piece.transform.position = oldPosition;
+                return;
+            }
+
+            Destroy(p);
+        }
+        
+        // Append the move to notation
+        _gameManager.moveNotations.Add($"{GetAlgebraicNotation(oldPosition)}{GetAlgebraicNotation(newPosition)}");
+        
+        // Invert the turn variable
+        _gameManager.whiteTurn ^= true;
+    }
+
+    private static string GetAlgebraicNotation(Vector2 position)
+    {
+        return $"{_alpha[Mathf.RoundToInt(position.x) - 1]}{position.y}";
     }
     
     private Collider2D DrawRay(Vector2 direction, float distance, Color color)

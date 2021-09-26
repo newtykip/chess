@@ -38,8 +38,6 @@ public class Stockfish {
       throw new ApplicationException();
   }
 
-  private string MovesToString(IEnumerable < string > moves) => string.Join(" ", moves);
-
   private void StartNewGame() {
     Send("ucinewgame");
     if (!IsReady())
@@ -52,9 +50,9 @@ public class Stockfish {
 
   private List<string> ReadLineAsList() => stockfish.ReadLine().Split(' ').ToList < string > ();
 
-  public void SetPosition(IEnumerable < string > moves) {
+  public void SetPosition(IEnumerable<string> moves) {
     this.StartNewGame();
-    this.Send("position startpos moves " + this.MovesToString(moves));
+    this.Send("position startpos moves " + string.Join(" ", moves));
   }
 
   public string GetBoardVisual() {
