@@ -1,0 +1,51 @@
+name: Build Chess for all supported platforms
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+    
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  buildForAllPlatforms:
+    name: Build for ${{ matrix.targetPlatform }} on Unity ${{ matrix.unityVersion }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion:
+          - 2021.1.20f1
+        targetPlatform:
+          - StandaloneWindows
+          - StandaloneWindows64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+            lfs: true
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-
+            Library-
+
+      - name: Build
+        uses: game-ci/unity-builder@v2
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          unityVersion: ${{ matrix.unityVersion }}
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Build-${{ matrix.targetPlatform }}-${{ matrix.unityVersion }}
+          path: build/${{ matrix.targetPlatform }}

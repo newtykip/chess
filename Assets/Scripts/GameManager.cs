@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,9 +9,12 @@ public class GameManager : MonoBehaviour
 	public GameObject piecePrefab;
 	public GameObject pieces;
 	public AudioManager audioManager;
-	
+
 	public bool whiteTurn = true;
+	public bool blackIsStockfish = true;
 	public int boardSize = 8;
+	public List<string> moveNotations = new List<string>();
+	public Stockfish Stockfish;
 
 	private readonly List<string> _startingPosition = new List<string>()
 	{
@@ -32,13 +36,16 @@ public class GameManager : MonoBehaviour
 		// Reverse the starting position because I want the list to mirror the board in the code kljfsadjkhsa
 		_startingPosition.Reverse();
 
+		// Start Stockfish
+		Stockfish = new Stockfish($"{Application.streamingAssetsPath}/stockfish14.exe");
+
 		// Draw the board's tiles
 		for (var x = 1; x < boardSize + 1; x++)
 		{
 			for (var y = 1; y < boardSize + 1; y++)
 			{
 				// Create the tile
-				var tile = Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
+				Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
 			}
 		}
 		
