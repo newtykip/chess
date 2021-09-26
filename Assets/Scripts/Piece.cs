@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class Piece : MonoBehaviour
@@ -44,7 +43,7 @@ public class Piece : MonoBehaviour
     private bool _isWhite;
     private string _pieceType;
 
-    public bool drawRays;
+    public bool drawRays = true;
     public char code;
 
     public void Start()
@@ -90,16 +89,77 @@ public class Piece : MonoBehaviour
 
         // Figure out potential moves
         var moves = new List<Vector2>();
+        var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
         switch (_pieceType)
         {
             case "Pawn":
-                // Move forward 1
-                moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 1 : _oldPosition.y - 1, 1));
-                // Initial move forward 2
-                if ((_isWhite && _oldPosition.y == 2) || (!_isWhite && _oldPosition.y == _gameManager.boardSize - 1))
+                var forwardOne = new Vector2(_oldPosition.x, _isWhite ? _oldPosition.y + 1 : _oldPosition.y - 1);
+                var forwardOneObstructed = false;
+
+                var forwardTwo = new Vector2(_oldPosition.x, _isWhite ? _oldPosition.y + 2 : _oldPosition.y - 2);
+                var forwardTwoObstructed = false;
+
+                foreach (var piece in allPieces)
                 {
-                    moves.Add(new Vector3(_oldPosition.x, _isWhite ? _oldPosition.y + 2 : _oldPosition.y - 2, 1));
+                    if ((Vector2) piece.transform.position == forwardOne)
+                    {
+                        forwardOneObstructed = true;
+                    }
+
+                    if ((Vector2) piece.transform.position == forwardTwo)
+                    {
+                        Debug.Log("oh fuckernoodles");
+                        forwardTwoObstructed = true;
+                    }
+                }
+
+                // Move forward 1 if another piece is not in the way
+                if (!forwardOneObstructed)
+                {
+                    moves.Add(forwardOne);
+                }
+
+                // Initial move forward 2 if another piece is not in the way
+                if (((_isWhite && _oldPosition.y == 2) || (!_isWhite && _oldPosition.y == _gameManager.boardSize - 1)) && !forwardTwoObstructed)
+                {
+                    moves.Add(forwardTwo);
+                }
+                
+                // Offer the option to take pieces that are diagonally nearby
+                if (_isWhite)
+                {
+                    var topLeft = DrawRay(Vector2.up + Vector2.left, 2, Color.magenta);
+                    var topRight = DrawRay(Vector2.up + Vector2.right, 2, Color.magenta);
+
+                    if (topLeft != null)
+                    {
+                        var collisionPosition = topLeft.transform.position;
+                        moves.Add(new Vector2(collisionPosition.x, collisionPosition.y));
+                    }
+
+                    if (topRight != null)
+                    {
+                        var collisionPosition = topRight.transform.position;
+                        moves.Add(new Vector2(collisionPosition.x, collisionPosition.y));
+                    }
+                }
+                else
+                {
+                    var bottomLeft = DrawRay(Vector2.down + Vector2.left, 2, Color.magenta);
+                    var bottomRight = DrawRay(Vector2.down + Vector2.right, 2, Color.magenta);
+
+                    if (bottomLeft != null)
+                    {
+                        var collisionPosition = bottomLeft.transform.position;
+                        moves.Add(new Vector2(collisionPosition.x, collisionPosition.y));
+                    }
+
+                    if (bottomRight != null)
+                    {
+                        var collisionPosition = bottomRight.transform.position;
+                        moves.Add(new Vector2(collisionPosition.x, collisionPosition.y));
+                    }
                 }
 
                 // todo: En Passant
@@ -157,6 +217,8 @@ public class Piece : MonoBehaviour
                     // Left/Right
                     moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y));
                     moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y));
+                    
+                    // todo: Castling
                 }
 
                 break;
@@ -174,8 +236,6 @@ public class Piece : MonoBehaviour
         }
 
         // Filter moves
-        var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
-
         foreach (var move in moves.ToArray())
         {
             foreach (var piece in allPieces.ToArray())
@@ -199,8 +259,6 @@ public class Piece : MonoBehaviour
         }
 
         // Remove any moves where the piece would have to jump
-        _boxCollider.enabled = false;
-
         moves = _pieceType switch
         {
             "Rook" => RookRayChecks(moves),
@@ -208,8 +266,6 @@ public class Piece : MonoBehaviour
             "Queen" => QueenRayChecks(moves),
             _ => moves
         };
-
-        _boxCollider.enabled = true;
 
         // Create highlights for the moves
         var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
@@ -267,27 +323,27 @@ public class Piece : MonoBehaviour
         {
             MakeMove(gameObject, _oldPosition, newPosition);
 
-            _gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
-
             // Temporary Stockfish AI for black 
             // todo: make this... better
-            if (_gameManager.blackIsStockfish)
+            if (_gameManager.stockfishEnabled)
             {
+                _gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
+
                 var k = 0f;
-                var blackMove = _gameManager.Stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
+                var stockfishMove = _gameManager.Stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
                 
-                var blackFrom = new Vector2(Array.IndexOf(_alpha, blackMove[0][0]) + 1, 0);
-                float.TryParse(blackMove[0][1].ToString(), out blackFrom.y);
+                var stockfishFrom = new Vector2(Array.IndexOf(_alpha, stockfishMove[0][0]) + 1, 0);
+                float.TryParse(stockfishMove[0][1].ToString(), out stockfishFrom.y);
                 
-                var blackTo = new Vector2(Array.IndexOf(_alpha, blackMove[1][0]) + 1, 0);
-                float.TryParse(blackMove[1][1].ToString(), out blackTo.y);
+                var stockfishTo = new Vector2(Array.IndexOf(_alpha, stockfishMove[1][0]) + 1, 0);
+                float.TryParse(stockfishMove[1][1].ToString(), out stockfishTo.y);
 
                 var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
                 
                 foreach (var piece in allPieces)
                 {
-                    if ((Vector2) piece.transform.position != blackFrom) continue;
-                    MakeMove(piece, blackFrom, blackTo);
+                    if ((Vector2) piece.transform.position != stockfishFrom) continue;
+                    MakeMove(piece, stockfishFrom, stockfishTo);
                 }
             }
         }
@@ -315,16 +371,16 @@ public class Piece : MonoBehaviour
             
         foreach (var p in allPieces)
         {
-            var pScript = p.GetComponent<Piece>();
+            var script = p.GetComponent<Piece>();
 
             // Ensure that the piece does not delete itself
             if (p.transform.position != piece.transform.position || p == piece) continue;
                 
             // Protect pieces from being taken by pieces of their own colour
-            if (pScript._isWhite == pieceScript._isWhite)
+            if (script._isWhite == pieceScript._isWhite)
             {
                 piece.transform.position = oldPosition;
-                return;
+                //return;
             }
 
             Destroy(p);
@@ -344,10 +400,14 @@ public class Piece : MonoBehaviour
     
     private Collider2D DrawRay(Vector2 direction, float distance, Color color)
     {
+        _boxCollider.enabled = false;
+
         var position = transform.position;
         var hit = Physics2D.Raycast(position, direction, distance);
         
         if (drawRays) Debug.DrawRay(position, direction * distance, color, 3);
+        
+        _boxCollider.enabled = true;
 
         return hit.collider;
     }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -11,7 +10,7 @@ public class GameManager : MonoBehaviour
 	public AudioManager audioManager;
 
 	public bool whiteTurn = true;
-	public bool blackIsStockfish = true;
+	public bool stockfishEnabled = true;
 	public int boardSize = 8;
 	public List<string> moveNotations = new List<string>();
 	public Stockfish Stockfish;

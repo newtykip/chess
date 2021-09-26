@@ -1,0 +1,3 @@
+[submodule "Assets/Scripts/netfish"]
+	path = Assets/Scripts/netfish
+	url = https://github.com/newtykins/netfish.git
