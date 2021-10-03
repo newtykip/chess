@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
 	public AudioManager audioManager;
 
 	public bool whiteTurn = true;
-	public bool stockfishEnabled = true;
+	public bool stockfishEnabled = false;
 	public int boardSize = 8;
 	public List<string> moveNotations = new List<string>();
 	public Stockfish Stockfish;
