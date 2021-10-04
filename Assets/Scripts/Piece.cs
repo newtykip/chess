@@ -14,7 +14,7 @@ public class Piece : MonoBehaviour
 	private BoxCollider2D _boxCollider;
 	private Vector3 _mousePosition;
 	private Vector3 _screenPoint;
-	private Vector2 _oldPosition;
+	private Vector3 _oldPosition;
 	private List<Vector2> _moves = new List<Vector2>();
 	private static char[] _alpha = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
 	private bool _toPassant = false;
@@ -27,7 +27,7 @@ public class Piece : MonoBehaviour
 		_boxCollider = gameObject.GetComponent<BoxCollider2D>();
 
 		// Determine the piece's colour and type
-		isWhite = char.IsLower(code);
+		isWhite = char.IsUpper(code);
 
 		pieceType = char.ToLower(code) switch
 		{
@@ -58,7 +58,7 @@ public class Piece : MonoBehaviour
 	public void OnMouseDown()
 	{
 		// Save the old piece position
-		Vector2 piecePosition = transform.position;
+		var piecePosition = transform.position;
 		_oldPosition = piecePosition;
 
 		if (isWhite == _gameManager.whiteTurn)
@@ -305,7 +305,7 @@ public class Piece : MonoBehaviour
 											move.y > _gameManager.boardManager.size ||
 											move.y < 1;
 
-					if (isMoveOutOfBounds || isMoveOverlapping || move == _oldPosition)
+					if (isMoveOutOfBounds || isMoveOverlapping || move == (Vector2)_oldPosition)
 					{
 						moves.Remove(move);
 					}
@@ -356,7 +356,7 @@ public class Piece : MonoBehaviour
 			// Figure out the piece's new position
 			var px = Mathf.Round(_mousePosition.x);
 			var py = Mathf.Round(_mousePosition.y);
-			var newPosition = new Vector2(px, py);
+			var newPosition = new Vector3(px, py, _oldPosition.z);
 
 			// Check:
 			// - the position is in bounds
@@ -381,17 +381,17 @@ public class Piece : MonoBehaviour
 					var k = 0f;
 					var stockfishMove = _gameManager.Stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
 
-					var stockfishFrom = new Vector2(Array.IndexOf(_alpha, stockfishMove[0][0]) + 1, 0);
+					var stockfishFrom = new Vector3(Array.IndexOf(_alpha, stockfishMove[0][0]) + 1, 0, _oldPosition.z);
 					float.TryParse(stockfishMove[0][1].ToString(), out stockfishFrom.y);
 
-					var stockfishTo = new Vector2(Array.IndexOf(_alpha, stockfishMove[1][0]) + 1, 0);
+					var stockfishTo = new Vector3(Array.IndexOf(_alpha, stockfishMove[1][0]) + 1, 0, _oldPosition.z);
 					float.TryParse(stockfishMove[1][1].ToString(), out stockfishTo.y);
 
 					var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
 					foreach (var piece in allPieces)
 					{
-						if ((Vector2)piece.transform.position != stockfishFrom) continue;
+						if (piece.transform.position != stockfishFrom) continue;
 						MakeMove(piece, stockfishFrom, stockfishTo);
 					}
 				}
@@ -410,7 +410,7 @@ public class Piece : MonoBehaviour
 		}
 	}
 
-	private void MakeMove(GameObject piece, Vector2 oldPosition, Vector2 newPosition)
+	private void MakeMove(GameObject piece, Vector3 oldPosition, Vector3 newPosition)
 	{
 		var pieceScript = piece.GetComponent<Piece>();
 		pieceScript._moveCount++;
@@ -453,7 +453,6 @@ public class Piece : MonoBehaviour
 
 			// Ensure that the piece does not delete itself
 			if (p.transform.position != piece.transform.position || p == piece) continue;
-
 
 			// Protect pieces from being taken by pieces of their own colour
 			if (script.isWhite == pieceScript.isWhite)
