@@ -86,12 +86,12 @@ public class Piece : MonoBehaviour
 
 	public void OnMouseDown()
 	{
+		// Save the old piece position
+		Vector2 piecePosition = transform.position;
+		_oldPosition = piecePosition;
+
 		if (_isWhite == _gameManager.whiteTurn)
 		{
-			// Save the old piece position
-			Vector2 piecePosition = transform.position;
-			_oldPosition = piecePosition;
-
 			// Figure out potential moves
 			var moves = new List<Vector2>();
 			var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
@@ -126,7 +126,7 @@ public class Piece : MonoBehaviour
 					}
 
 					// Initial move forward 2 if another piece is not in the way
-					if (((_isWhite && piecePosition.y == 2) || (!_isWhite && _oldPosition.y == _gameManager.boardSize - 1)) && !forwardTwoObstructed)
+					if (((_isWhite && piecePosition.y == 2) || (!_isWhite && _oldPosition.y == _gameManager.boardManager.size - 1)) && !forwardTwoObstructed)
 					{
 						moves.Add(forwardTwo);
 					}
@@ -263,7 +263,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Queen":
-					for (var i = 0; i < _gameManager.boardSize; i++)
+					for (var i = 0; i < _gameManager.boardManager.size; i++)
 					{
 						// Forward/Backwards
 						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
@@ -282,7 +282,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Bishop":
-					for (var i = 0; i < _gameManager.boardSize; i++)
+					for (var i = 0; i < _gameManager.boardManager.size; i++)
 					{
 						// Vertical
 						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
@@ -293,7 +293,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Rook":
-					for (var i = 0; i < _gameManager.boardSize; i++)
+					for (var i = 0; i < _gameManager.boardManager.size; i++)
 					{
 						// Forward/Backwards
 						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
@@ -330,8 +330,8 @@ public class Piece : MonoBehaviour
 					var isMoveOverlapping = move == (Vector2)piece.transform.position && pieceScript._isWhite == _isWhite;
 
 					// Check if the move is out of bounds
-					var isMoveOutOfBounds = move.x > _gameManager.boardSize || move.x < 1 ||
-											move.y > _gameManager.boardSize ||
+					var isMoveOutOfBounds = move.x > _gameManager.boardManager.size || move.x < 1 ||
+											move.y > _gameManager.boardManager.size ||
 											move.y < 1;
 
 					if (isMoveOutOfBounds || isMoveOverlapping || move == _oldPosition)
@@ -370,13 +370,10 @@ public class Piece : MonoBehaviour
 
 	public void OnMouseDrag()
 	{
-		if (_isWhite == _gameManager.whiteTurn)
-		{
-			// Update the position of the piece to the new mouse positions
-			_mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
+		// Update the position of the piece to the new mouse positions
+		_mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
 
-			transform.position = _mousePosition;
-		}
+		transform.position = _mousePosition;
 	}
 
 	public void OnMouseUp()
@@ -442,6 +439,10 @@ public class Piece : MonoBehaviour
 
 			// Clear the moves
 			_moves.Clear();
+		}
+		else
+		{
+			transform.position = _oldPosition;
 		}
 	}
 
@@ -540,7 +541,7 @@ public class Piece : MonoBehaviour
 	{
 		foreach (var direction in _rookDirections.ToArray())
 		{
-			var ray = DrawRay(direction, _gameManager.boardSize, Color.blue);
+			var ray = DrawRay(direction, _gameManager.boardManager.size, Color.blue);
 
 			if (ray != null)
 			{
@@ -551,7 +552,7 @@ public class Piece : MonoBehaviour
 				{
 					// If a piece has hits another piece with its top ray, remove all of the moves ahead of the collided piece
 					case 1:
-						for (var i = 1; i < _gameManager.boardSize + 1; i++)
+						for (var i = 1; i < _gameManager.boardManager.size + 1; i++)
 						{
 							moves.Remove(new Vector2(position.x, collidedPosition.y + i));
 						}
@@ -560,7 +561,7 @@ public class Piece : MonoBehaviour
 
 					// If a piece has hits another piece with its bottom ray, remove all of the moves behind the collided piece
 					case -1:
-						for (var i = 1; i < _gameManager.boardSize + 1; i++)
+						for (var i = 1; i < _gameManager.boardManager.size + 1; i++)
 						{
 							moves.Remove(new Vector2(position.x, collidedPosition.y - i));
 						}
@@ -572,7 +573,7 @@ public class Piece : MonoBehaviour
 				{
 					// If a piece hits another piece with its left ray, remove all of the moves to the left of the collided piece
 					case -1:
-						for (var i = 0; i < _gameManager.boardSize + 1; i++)
+						for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x - i, position.y));
 						}
@@ -581,7 +582,7 @@ public class Piece : MonoBehaviour
 
 					// If a piece hits another piece with its right ray, remove all of the moves to the right of the collided piece
 					case 1:
-						for (var i = 0; i < _gameManager.boardSize + 1; i++)
+						for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x + i, position.y));
 						}
@@ -598,7 +599,7 @@ public class Piece : MonoBehaviour
 	{
 		foreach (var direction in _bishopDirections.ToArray())
 		{
-			var ray = DrawRay(direction, _gameManager.boardSize, Color.red);
+			var ray = DrawRay(direction, _gameManager.boardManager.size, Color.red);
 
 			if (ray != null)
 			{
@@ -613,7 +614,7 @@ public class Piece : MonoBehaviour
 						{
 							// ...left...
 							case -1:
-								for (var i = 0; i < _gameManager.boardSize + 1; i++)
+								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y + i));
 								}
@@ -622,7 +623,7 @@ public class Piece : MonoBehaviour
 
 							// ...right...
 							case 1:
-								for (var i = 0; i < _gameManager.boardSize + 1; i++)
+								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y + i));
 								}
@@ -639,7 +640,7 @@ public class Piece : MonoBehaviour
 						{
 							// ...left...
 							case -1:
-								for (var i = 0; i < _gameManager.boardSize + 1; i++)
+								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y - i));
 								}
@@ -648,7 +649,7 @@ public class Piece : MonoBehaviour
 
 							// ...right...
 							case 1:
-								for (var i = 0; i < _gameManager.boardSize + 1; i++)
+								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y - i));
 								}

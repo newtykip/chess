@@ -32,8 +32,8 @@ public class ArrowManager : MonoBehaviour
 			_arrowEnd = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
 
 			// Ensure that the arrow is in bounds
-			var startInBounds = (0 < _arrowStart.x && _arrowStart.x <= _gameManager.boardSize) && (0 < _arrowStart.y && _arrowStart.y <= _gameManager.boardSize);
-			var endInBounds = (0 < _arrowEnd.x && _arrowEnd.x <= _gameManager.boardSize) && (0 < _arrowEnd.y && _arrowEnd.y <= _gameManager.boardSize);
+			var startInBounds = (0 < _arrowStart.x && _arrowStart.x <= _gameManager.boardManager.size) && (0 < _arrowStart.y && _arrowStart.y <= _gameManager.boardManager.size);
+			var endInBounds = (0 < _arrowEnd.x && _arrowEnd.x <= _gameManager.boardManager.size) && (0 < _arrowEnd.y && _arrowEnd.y <= _gameManager.boardManager.size);
 
 			if (startInBounds && endInBounds && _arrowStart != _arrowEnd)
 			{

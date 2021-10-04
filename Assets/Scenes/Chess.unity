@@ -583,6 +583,8 @@ GameObject:
   - component: {fileID: 436877846}
   - component: {fileID: 436877848}
   - component: {fileID: 436877849}
+  - component: {fileID: 436877850}
+  - component: {fileID: 436877851}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Manager
@@ -602,14 +604,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a70a862e8842b445bbf9e3ead830b95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tilePrefab: {fileID: 7712301034364165353, guid: 821ee76df5e6fda4286a04618d60e392, type: 3}
-  board: {fileID: 919212379}
-  piecePrefab: {fileID: 3518618552058573107, guid: aa00227a804123945af4a7e2671c95e7, type: 3}
-  pieces: {fileID: 199066720}
-  audioManager: {fileID: 0}
+  audioManager: {fileID: 436877848}
+  pieceManager: {fileID: 436877850}
+  arrowManager: {fileID: 436877849}
+  boardManager: {fileID: 436877851}
   whiteTurn: 1
   stockfishEnabled: 0
-  boardSize: 8
   moveNotations: []
 --- !u!4 &436877847
 Transform:
@@ -650,9 +650,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7a2923a2c814b1a9169a914e1d39f3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arrows: {fileID: 1548688312}
+  arrowContainer: {fileID: 1548688312}
   arrowMaterial: {fileID: 2100000, guid: adae261595e6e6443ac953424c4a53b8, type: 2}
   arrowHeadPrefab: {fileID: 6640933613997911897, guid: 9f814b5db49874646a4b3709e65645dd, type: 3}
+  gameManagerObject: {fileID: 436877845}
+--- !u!114 &436877850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436877845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d208fe82adfa5d4ba894a8841741152, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  piecePrefab: {fileID: 3518618552058573107, guid: aa00227a804123945af4a7e2671c95e7, type: 3}
+  pieces: {fileID: 199066720}
+--- !u!114 &436877851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436877845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0b29f809ca8d9f42a7bf0c1b54044f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilePrefab: {fileID: 7712301034364165353, guid: 821ee76df5e6fda4286a04618d60e392, type: 3}
+  board: {fileID: 919212379}
+  size: 8
 --- !u!1 &919212379
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,6 +713,36 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1105688107
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1105688108}
+  m_Layer: 0
+  m_Name: Legal Move Indicators
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1105688108
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1105688107}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.714298, y: 4.7870746, z: -5.1006517}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1455957524
 GameObject:
   m_ObjectHideFlags: 0
@@ -712,7 +772,7 @@ Transform:
   m_Children:
   - {fileID: 251027789}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1548688312
 GameObject:
