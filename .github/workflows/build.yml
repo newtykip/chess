@@ -23,13 +23,11 @@ jobs:
           - StandaloneWindows64
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           lfs: true
-
-      - name: Checkout Submodules
-        uses: textbook/git-checkout-submodule-action@master
+          submodules: recursive
 
       - name: Cache
         uses: actions/cache@v2
