@@ -39,9 +39,22 @@ public class ArrowManager : MonoBehaviour
             var startInBounds = (0 < _arrowStart.x && _arrowStart.x <= _gameManager.boardSize) && (0 < _arrowStart.y && _arrowStart.y <= _gameManager.boardSize);
             var endInBounds = (0 < _arrowEnd.x && _arrowEnd.x <= _gameManager.boardSize) && (0 < _arrowEnd.y && _arrowEnd.y <= _gameManager.boardSize);
 
-            if (startInBounds && endInBounds)
+            if (startInBounds && endInBounds && _arrowStart != _arrowEnd)
             {
-                DrawArrow(_arrowStart, _arrowEnd);
+                // The default arrow colour is white
+                var colour = Color.yellow;
+                
+                // Hold down ctrl for a red arrow
+                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                    colour = Color.red;
+                // Hold down alt for a blue arrow
+                else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                    colour = Color.blue;
+                // Hold down shift for a green arrow
+                else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                    colour = Color.green;
+                
+                DrawArrow(_arrowStart, _arrowEnd, colour);
             }
         }
 
@@ -52,17 +65,19 @@ public class ArrowManager : MonoBehaviour
         }
     }
 
-    private void DrawArrow(Vector2 start, Vector2 end)
+    private void DrawArrow(Vector2 start, Vector2 end, Color colour)
     {
         // Instantiate the arrow
-        var arrowGameObject = new GameObject($"Arrow #{arrows.transform.childCount + 1}");
+        var arrowCount = arrows.transform.childCount + 1;
+        
+        var arrowGameObject = new GameObject($"Arrow #{arrowCount}");
         arrowGameObject.transform.parent = arrows.transform;
      
         // Draw the body of the arrow
         var lineRenderer = arrowGameObject.AddComponent<LineRenderer>();
         
-        lineRenderer.startColor = Color.white;
-        lineRenderer.endColor = Color.white;
+        lineRenderer.startColor = colour;
+        lineRenderer.endColor = colour;
         lineRenderer.startWidth = 0.2f;
         lineRenderer.endWidth = 0.2f;
         lineRenderer.material = arrowMaterial;
@@ -71,6 +86,9 @@ public class ArrowManager : MonoBehaviour
         
         // Draw the head of the arrow
         var arrowHead = Instantiate(arrowHeadPrefab, end, Quaternion.identity);
+        var arrowHeadSpriteRenderer = arrowHead.GetComponent<SpriteRenderer>();
+        arrowHeadSpriteRenderer.color = colour;
+        arrowHead.name = $"Arrow #{arrowCount} Head";
         arrowHead.transform.parent = arrowGameObject.transform;
         
         // Calculate the arrow head's angle
