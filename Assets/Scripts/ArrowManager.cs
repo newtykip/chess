@@ -1,15 +1,35 @@
-﻿using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ArrowManager : MonoBehaviour
 {
     public GameObject arrows;
     public Material arrowMaterial;
+    public GameObject arrowHeadPrefab;
 
-    private void Start()
+    private Vector2 _arrowStart;
+    private Vector2 _arrowEnd;
+
+    private void Update()
     {
-        DrawArrow(new Vector2(1, 1), new Vector2(3, 3));
+        // When the button has been initially pressed, store the start position of the arrow
+        if (Input.GetMouseButtonDown(1))
+        {
+            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+            _arrowStart = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
+        }
+        
+        // While holding it down, keep updating the end of the arrow
+        if (Input.GetMouseButton(1))
+        {
+            var mousePosition = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
+            _arrowEnd = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
+        }
+
+        // Once the button has been finally released, draw the arrow
+        if (Input.GetMouseButtonUp(1))
+        {
+            DrawArrow(_arrowStart, _arrowEnd);
+        }
     }
 
     void DrawArrow(Vector2 start, Vector2 end)
@@ -18,10 +38,9 @@ public class ArrowManager : MonoBehaviour
         var arrowGameObject = new GameObject($"Arrow #{arrows.transform.childCount + 1}");
         arrowGameObject.transform.parent = arrows.transform;
      
-        // Create the line renderer
+        // Draw the body of the arrow
         var lineRenderer = arrowGameObject.AddComponent<LineRenderer>();
         
-        // Configure the line renderer
         lineRenderer.startColor = Color.white;
         lineRenderer.endColor = Color.white;
         lineRenderer.startWidth = 0.2f;
@@ -29,5 +48,13 @@ public class ArrowManager : MonoBehaviour
         lineRenderer.material = arrowMaterial;
         lineRenderer.SetPosition(0, new Vector3(start.x, start.y, -1));
         lineRenderer.SetPosition(1, new Vector3(end.x, end.y, -1));
+        
+        // Draw the head of the arrow
+        var arrowHead = Instantiate(arrowHeadPrefab, end, Quaternion.identity);
+        arrowHead.transform.parent = arrowGameObject.transform;
+        
+        // Calculate the arrow head's angle
+        var arrowHeadAngle = (Mathf.Atan2((end.y - start.y), (end.x - start.x)) * Mathf.Rad2Deg) - 90f;
+        arrowHead.transform.rotation = Quaternion.Euler(0f, 0f, arrowHeadAngle);
     }
 }

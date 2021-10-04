@@ -652,6 +652,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arrows: {fileID: 1548688312}
   arrowMaterial: {fileID: 2100000, guid: adae261595e6e6443ac953424c4a53b8, type: 2}
+  arrowHeadPrefab: {fileID: 6640933613997911897, guid: 9f814b5db49874646a4b3709e65645dd, type: 3}
 --- !u!1 &919212379
 GameObject:
   m_ObjectHideFlags: 0

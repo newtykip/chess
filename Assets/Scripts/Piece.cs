@@ -33,7 +33,7 @@ public class Piece : MonoBehaviour
     };
 
     private GameManager _gameManager;
-    private Vector3 _mousePosition;
+    private Vector2 _mousePosition;
     private Vector3 _screenPoint;
     private Vector2 _oldPosition;
     private SpriteRenderer _spriteRenderer;
@@ -368,8 +368,7 @@ public class Piece : MonoBehaviour
     {
         // Update the position of the piece to the new mouse positions
         _mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
-        _mousePosition.z = -1f;
-        
+
         transform.position = _mousePosition;
     }
 
