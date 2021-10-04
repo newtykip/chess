@@ -100,7 +100,7 @@ public class ArrowManager : MonoBehaviour
 		lineRenderer.SetPosition(1, new Vector3(newEnd.x, newEnd.y, -1));
 
 		// Draw the head of the arrow
-		var arrowHead = Instantiate(arrowHeadPrefab, new Vector3(end.x, end.y, -1), Quaternion.identity);
+		var arrowHead = Instantiate(arrowHeadPrefab, new Vector3(end.x, end.y, -2), Quaternion.identity);
 		var arrowHeadSpriteRenderer = arrowHead.GetComponent<SpriteRenderer>();
 		arrowHeadSpriteRenderer.color = colour;
 		arrowHead.name = $"Arrow #{arrowCount} Head";
