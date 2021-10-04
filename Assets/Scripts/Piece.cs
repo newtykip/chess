@@ -329,7 +329,25 @@ public class Piece : MonoBehaviour
 				foreach (var move in moves)
 				{
 					if ((Vector2)tile.transform.position != move) continue;
-					_gameManager.boardManager.DrawIndicator(tile, move);
+
+					var takes = false;
+
+					foreach (var piece in allPieces)
+					{
+						var script = piece.GetComponent<Piece>();
+
+						// If the piece being iterated over is an enemy
+						if (isWhite != script.isWhite)
+						{
+							// If the piece is at the move, mark it as takeable
+							if ((Vector2)piece.transform.position == move)
+							{
+								takes = true;
+							}
+						}
+					}
+
+					_gameManager.boardManager.DrawIndicator(tile, move, takes);
 				}
 			}
 

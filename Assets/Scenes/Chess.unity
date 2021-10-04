@@ -611,6 +611,18 @@ MonoBehaviour:
   whiteTurn: 1
   stockfishEnabled: 0
   moveNotations: []
+  orange:
+    serializedVersion: 2
+    rgba: 3355485695
+  red:
+    serializedVersion: 2
+    rgba: 3358733055
+  blue:
+    serializedVersion: 2
+    rgba: 3372193330
+  green:
+    serializedVersion: 2
+    rgba: 3358785330
 --- !u!4 &436877847
 Transform:
   m_ObjectHideFlags: 0
@@ -653,7 +665,6 @@ MonoBehaviour:
   arrowContainer: {fileID: 1548688312}
   arrowMaterial: {fileID: 2100000, guid: adae261595e6e6443ac953424c4a53b8, type: 2}
   arrowHeadPrefab: {fileID: 6640933613997911897, guid: 9f814b5db49874646a4b3709e65645dd, type: 3}
-  gameManagerObject: {fileID: 436877845}
 --- !u!114 &436877850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -668,6 +679,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   piecePrefab: {fileID: 3518618552058573107, guid: aa00227a804123945af4a7e2671c95e7, type: 3}
   piecesContainer: {fileID: 199066720}
+  drawRays: 0
   blackRook: {fileID: 21300000, guid: c71e8e957f1155d46a08cd0def775093, type: 3}
   blackKnight: {fileID: 21300000, guid: 2c7a46b0b87301e46955a48272c86f8e, type: 3}
   blackBishop: {fileID: 21300000, guid: e8dda1bb7ad1d81468f795f121205d82, type: 3}
@@ -693,7 +705,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 7712301034364165353, guid: 821ee76df5e6fda4286a04618d60e392, type: 3}
-  indicatorPrefab: {fileID: 3361092794405109114, guid: bb7f28c010a8e6f49947f24e59603bdb, type: 3}
+  legalIndicatorPrefab: {fileID: 3361092794405109114, guid: bb7f28c010a8e6f49947f24e59603bdb, type: 3}
+  takesIndicatorPrefab: {fileID: 2148754855103528489, guid: 4e27de4677a93344c938623bb0bf96bf, type: 3}
   tileContainer: {fileID: 919212379}
   size: 8
 --- !u!1 &919212379
