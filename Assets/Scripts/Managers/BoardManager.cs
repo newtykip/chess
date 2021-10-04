@@ -62,19 +62,19 @@ public class BoardManager : MonoBehaviour
 							// Hold down shift for green
 							else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 							{
-								renderer.color = _gameManager.green;
+								renderer.color = script._isLight ? new Color32(_gameManager.green.r, _gameManager.green.g, _gameManager.green.b, 255) : _gameManager.green;
 							}
 
 							// Hold down alt for blue
 							else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
 							{
-								renderer.color = _gameManager.blue;
+								renderer.color = script._isLight ? new Color32(_gameManager.blue.r, _gameManager.blue.g, _gameManager.blue.b, 255) : _gameManager.blue;
 							}
 
 							// The default colour is red
 							else
 							{
-								renderer.color = _gameManager.red;
+								renderer.color = script._isLight ? new Color32(_gameManager.red.r, _gameManager.red.g, _gameManager.red.b, 255) : _gameManager.red;
 							}
 						}
 
@@ -114,6 +114,7 @@ public class BoardManager : MonoBehaviour
 
 	public void DrawIndicator(GameObject tile, Vector2 move)
 	{
+		// todo: check for takes, if there is a take draw a circle instead of a dot
 		var indicator = Instantiate(indicatorPrefab, new Vector3(move.x, move.y, -3), Quaternion.identity);
 		indicator.transform.parent = tile.transform;
 		indicator.name = $"{tile.name} Indicator";
