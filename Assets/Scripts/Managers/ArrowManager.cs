@@ -44,6 +44,8 @@ public class ArrowManager : MonoBehaviour
 					var head = arrow.GetChild(0);
 
 					// If the arrow heads are touching
+					// todo: check if arrows are exact duplicates by not just checking heads, but start
+					// todo: positions too
 					if ((Vector2)head.transform.position == _arrowEnd)
 					{
 						isDuplicate = true;

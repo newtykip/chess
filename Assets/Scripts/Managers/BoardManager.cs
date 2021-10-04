@@ -8,6 +8,7 @@ public class BoardManager : MonoBehaviour
 	public int size = 8;
 
 	private GameManager _gameManager;
+	private Vector2 _startPosition;
 
 
 	public void Start()
@@ -23,53 +24,63 @@ public class BoardManager : MonoBehaviour
 		var ty = Mathf.Round(mousePosition.y);
 		var tilePosition = new Vector2(tx, ty);
 
-		// If a right click is detected
+		// If the right click button is lowered
 		if (Input.GetMouseButtonDown(1))
 		{
-			// Detect whether the click was on a tile, and if it was figure out which tile it was on
-			foreach (Transform tile in tileContainer.transform)
+			_startPosition = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
+		}
+
+		// If the right click button has been released
+		if (Input.GetMouseButtonUp(1))
+		{
+			var endPosition = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
+
+			if (_startPosition == endPosition)
 			{
-				if ((Vector2)tile.position == tilePosition)
+				// Detect whether the click was on a tile, and if it was figure out which tile it was on
+				foreach (Transform tile in tileContainer.transform)
 				{
-					// Get the tile's components
-					var script = tile.gameObject.GetComponent<Tile>();
-					var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
-
-					// If the tile was already highlighted, reset its colours
-					if (script._highlighted)
+					if ((Vector2)tile.position == tilePosition)
 					{
-						renderer.color = script._defaultColour;
-					}
-					else
-					{
-						// todo: different highlight colours for dark tiles (script._isLight)
-						// Hold down control for orange
-						if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-						{
-							renderer.color = _gameManager.orange;
-						}
+						// Get the tile's components
+						var script = tile.gameObject.GetComponent<Tile>();
+						var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
 
-						// Hold down shift for green
-						else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+						// If the tile was already highlighted, reset its colours
+						if (script._highlighted)
 						{
-							renderer.color = _gameManager.green;
+							renderer.color = script._defaultColour;
 						}
-
-						// Hold down alt for blue
-						else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
-						{
-							renderer.color = _gameManager.blue;
-						}
-
-						// The default colour is red
 						else
 						{
-							renderer.color = _gameManager.red;
-						}
-					}
+							// Hold down control for orange
+							if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+							{
+								renderer.color = script._isLight ? new Color32(_gameManager.orange.r, _gameManager.orange.g, _gameManager.orange.b, 255) : _gameManager.orange;
+							}
 
-					// Invert the highlighted indicator
-					script._highlighted = !script._highlighted;
+							// Hold down shift for green
+							else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+							{
+								renderer.color = _gameManager.green;
+							}
+
+							// Hold down alt for blue
+							else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+							{
+								renderer.color = _gameManager.blue;
+							}
+
+							// The default colour is red
+							else
+							{
+								renderer.color = _gameManager.red;
+							}
+						}
+
+						// Invert the highlighted indicator
+						script._highlighted = !script._highlighted;
+					}
 				}
 			}
 		}
@@ -83,6 +94,7 @@ public class BoardManager : MonoBehaviour
 				var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
 
 				renderer.color = script._defaultColour;
+				script._highlighted = false;
 			}
 		}
 	}
