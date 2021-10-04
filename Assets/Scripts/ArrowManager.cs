@@ -5,11 +5,18 @@ public class ArrowManager : MonoBehaviour
     public GameObject arrows;
     public Material arrowMaterial;
     public GameObject arrowHeadPrefab;
+    public GameObject gameManagerObject;
 
+    private GameManager _gameManager;
     private Vector2 _arrowStart;
     private Vector2 _arrowEnd;
 
-    private void Update()
+    public void Start()
+    {
+        _gameManager = gameManagerObject.GetComponent<GameManager>();
+    }
+
+    public void Update()
     {
         // When the button has been initially pressed, store the start position of the arrow
         if (Input.GetMouseButtonDown(1))
@@ -28,11 +35,24 @@ public class ArrowManager : MonoBehaviour
         // Once the button has been finally released, draw the arrow
         if (Input.GetMouseButtonUp(1))
         {
-            DrawArrow(_arrowStart, _arrowEnd);
+            // Ensure that the arrow is in bounds
+            var startInBounds = (0 < _arrowStart.x && _arrowStart.x <= _gameManager.boardSize) && (0 < _arrowStart.y && _arrowStart.y <= _gameManager.boardSize);
+            var endInBounds = (0 < _arrowEnd.x && _arrowEnd.x <= _gameManager.boardSize) && (0 < _arrowEnd.y && _arrowEnd.y <= _gameManager.boardSize);
+
+            if (startInBounds && endInBounds)
+            {
+                DrawArrow(_arrowStart, _arrowEnd);
+            }
+        }
+
+        // Clear all arrows on a left click
+        if (Input.GetMouseButtonDown(0))
+        {
+            ClearArrows();
         }
     }
 
-    void DrawArrow(Vector2 start, Vector2 end)
+    private void DrawArrow(Vector2 start, Vector2 end)
     {
         // Instantiate the arrow
         var arrowGameObject = new GameObject($"Arrow #{arrows.transform.childCount + 1}");
@@ -56,5 +76,13 @@ public class ArrowManager : MonoBehaviour
         // Calculate the arrow head's angle
         var arrowHeadAngle = (Mathf.Atan2((end.y - start.y), (end.x - start.x)) * Mathf.Rad2Deg) - 90f;
         arrowHead.transform.rotation = Quaternion.Euler(0f, 0f, arrowHeadAngle);
+    }
+
+    private void ClearArrows()
+    {
+        foreach (Transform arrow in arrows.transform)
+        {
+            Destroy(arrow.gameObject);
+        }
     }
 }
