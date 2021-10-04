@@ -16,7 +16,6 @@ public class Piece : MonoBehaviour
 	private Vector3 _screenPoint;
 	private Vector3 _oldPosition;
 	private List<Vector2> _moves = new List<Vector2>();
-	private static char[] _alpha = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
 	private bool _toPassant = false;
 	private int _moveCount = 0;
 
@@ -141,7 +140,7 @@ public class Piece : MonoBehaviour
 					// En Passant
 					if (pieceType == "Pawn")
 					{
-						var lastMove = GetHistoricalMove(1);
+						var lastMove = _gameManager.GetHistoricalMove(1);
 
 						if (isWhite)
 						{
@@ -156,7 +155,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value && lastMove.Value.y + 2 == 7 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y + 2 == 7 && enemyScript._moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, 1));
@@ -172,7 +171,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value && lastMove.Value.y + 2 == 7 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y + 2 == 7 && enemyScript._moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, 1));
@@ -193,7 +192,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value && lastMove.Value.y - 2 == 2 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y - 2 == 2 && enemyScript._moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, -1));
@@ -209,7 +208,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value && lastMove.Value.y - 2 == 2 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y - 2 == 2 && enemyScript._moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, -1));
@@ -399,10 +398,10 @@ public class Piece : MonoBehaviour
 					var k = 0f;
 					var stockfishMove = _gameManager.stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
 
-					var stockfishFrom = new Vector3(Array.IndexOf(_alpha, stockfishMove[0][0]) + 1, 0, _oldPosition.z);
+					var stockfishFrom = new Vector3(Array.IndexOf(_gameManager.alphabet, stockfishMove[0][0]) + 1, 0, _oldPosition.z);
 					float.TryParse(stockfishMove[0][1].ToString(), out stockfishFrom.y);
 
-					var stockfishTo = new Vector3(Array.IndexOf(_alpha, stockfishMove[1][0]) + 1, 0, _oldPosition.z);
+					var stockfishTo = new Vector3(Array.IndexOf(_gameManager.alphabet, stockfishMove[1][0]) + 1, 0, _oldPosition.z);
 					float.TryParse(stockfishMove[1][1].ToString(), out stockfishTo.y);
 
 					var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
@@ -440,7 +439,10 @@ public class Piece : MonoBehaviour
 		_gameManager.audioManager.PlayPlace();
 
 		// Append the move to notation
-		_gameManager.moveNotations.Add($"{GetAlgebraicNotation(oldPosition)}{GetAlgebraicNotation(newPosition)}");
+		_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
+
+		// Highlight the last move
+		_gameManager.boardManager.HighlightLastMove();
 
 		// Invert the turn variable
 		_gameManager.whiteTurn = !_gameManager.whiteTurn;
@@ -480,27 +482,6 @@ public class Piece : MonoBehaviour
 			}
 
 			Destroy(p);
-		}
-	}
-
-	private static string GetAlgebraicNotation(Vector2 position)
-	{
-		return $"{_alpha[Mathf.RoundToInt(position.x) - 1]}{position.y}";
-	}
-
-	private Vector2? GetHistoricalMove(int movesBack)
-	{
-		try
-		{
-			var lastMoveNotation = _gameManager.moveNotations[_gameManager.moveNotations.Count - movesBack];
-			var x = Array.IndexOf(_alpha, lastMoveNotation.Substring(2)[0]) + 1;
-			var y = Convert.ToInt32(lastMoveNotation.Substring(2)[1].ToString());
-
-			return new Vector2(x, y);
-		}
-		catch (ArgumentOutOfRangeException)
-		{
-			return null;
 		}
 	}
 

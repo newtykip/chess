@@ -47,40 +47,43 @@ public class BoardManager : MonoBehaviour
 						var script = tile.gameObject.GetComponent<Tile>();
 						var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
 
-						// If the tile was already highlighted, reset its colours
-						if (script._highlighted)
+						// If the tile was already indicator, reset its colours
+						if (script.indicator)
 						{
-							renderer.color = script._defaultColour;
+							renderer.color = script.highlighted ? _gameManager.yellow : script.defaultColour;
 						}
 						else
 						{
 							// Hold down control for orange
 							if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
 							{
-								renderer.color = script._isLight ? new Color32(_gameManager.orange.r, _gameManager.orange.g, _gameManager.orange.b, 255) : _gameManager.orange;
+								renderer.color = script.isLight ? new Color32(_gameManager.orange.r, _gameManager.orange.g, _gameManager.orange.b, 255) : _gameManager.orange;
 							}
 
 							// Hold down shift for green
 							else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 							{
-								renderer.color = script._isLight ? new Color32(_gameManager.green.r, _gameManager.green.g, _gameManager.green.b, 255) : _gameManager.green;
+								renderer.color = script.isLight ? new Color32(_gameManager.green.r, _gameManager.green.g, _gameManager.green.b, 255) : _gameManager.green;
 							}
 
 							// Hold down alt for blue
 							else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
 							{
-								renderer.color = script._isLight ? new Color32(_gameManager.blue.r, _gameManager.blue.g, _gameManager.blue.b, 255) : _gameManager.blue;
+								renderer.color = script.isLight ? new Color32(_gameManager.blue.r, _gameManager.blue.g, _gameManager.blue.b, 255) : _gameManager.blue;
 							}
 
 							// The default colour is red
 							else
 							{
-								renderer.color = script._isLight ? new Color32(_gameManager.red.r, _gameManager.red.g, _gameManager.red.b, 255) : _gameManager.red;
+								renderer.color = script.isLight ? new Color32(_gameManager.red.r, _gameManager.red.g, _gameManager.red.b, 255) : _gameManager.red;
 							}
 						}
 
-						// Invert the highlighted indicator
-						script._highlighted = !script._highlighted;
+						// Save the current colour
+						script.currentColour = renderer.color;
+
+						// Invert the indicator indicator
+						script.indicator = !script.indicator;
 					}
 				}
 			}
@@ -94,8 +97,21 @@ public class BoardManager : MonoBehaviour
 				var script = tile.gameObject.GetComponent<Tile>();
 				var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
 
-				renderer.color = script._defaultColour;
-				script._highlighted = false;
+				// Ignore yellow, as that is only for previous move highlighting
+				if (renderer.color != _gameManager.yellow)
+				{
+					if (script.highlighted)
+					{
+						renderer.color = _gameManager.yellow;
+					}
+					else
+					{
+						renderer.color = script.defaultColour;
+						script.currentColour = renderer.color;
+					}
+
+					script.indicator = false;
+				}
 			}
 		}
 	}
@@ -138,6 +154,35 @@ public class BoardManager : MonoBehaviour
 			{
 				var indicator = tile.GetChild(0);
 				Destroy(indicator.gameObject);
+			}
+		}
+	}
+
+	public void HighlightLastMove()
+	{
+		var lastMove = _gameManager.GetHistoricalMove(1);
+
+		if (lastMove != null)
+		{
+			foreach (Transform tile in tileContainer.transform)
+			{
+				Vector2 position = tile.transform.position;
+				var script = tile.GetComponent<Tile>();
+				var renderer = tile.GetComponent<SpriteRenderer>();
+
+				// If the tile was already highlighted, unhilight it
+				if (script.highlighted)
+				{
+					renderer.color = script.defaultColour;
+					script.highlighted = false;
+				}
+
+				// Otherwise, highlight the tile
+				if (position == lastMove.Value.from || position == lastMove.Value.to)
+				{
+					renderer.color = _gameManager.yellow;
+					script.highlighted = true;
+				}
 			}
 		}
 	}
