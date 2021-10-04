@@ -3,7 +3,8 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour
 {
 	public GameObject tilePrefab;
-	public GameObject indicatorPrefab;
+	public GameObject legalIndicatorPrefab;
+	public GameObject takesIndicatorPrefab;
 	public GameObject tileContainer;
 	public int size = 8;
 
@@ -112,12 +113,20 @@ public class BoardManager : MonoBehaviour
 		}
 	}
 
-	public void DrawIndicator(GameObject tile, Vector2 move)
+	public void DrawIndicator(GameObject tile, Vector2 move, bool doesTake)
 	{
-		// todo: check for takes, if there is a take draw a circle instead of a dot
-		var indicator = Instantiate(indicatorPrefab, new Vector3(move.x, move.y, -3), Quaternion.identity);
-		indicator.transform.parent = tile.transform;
-		indicator.name = $"{tile.name} Indicator";
+		if (doesTake)
+		{
+			var indicator = Instantiate(takesIndicatorPrefab, new Vector3(move.x, move.y, -3), Quaternion.identity, tile.transform);
+
+			indicator.name = $"{tile.name} Takes Indicator";
+		}
+		else
+		{
+			var indicator = Instantiate(legalIndicatorPrefab, new Vector3(move.x, move.y, -3), Quaternion.identity, tile.transform);
+
+			indicator.name = $"{tile.name} Legal Indicator";
+		}
 	}
 
 	public void ClearIndicators()
