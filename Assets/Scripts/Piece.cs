@@ -9,13 +9,13 @@ public class Piece : MonoBehaviour
 	public bool isWhite;
 	public string pieceType;
 	public char code;
+	public bool selected = false;
+	public List<Vector2> moves = new List<Vector2>();
 
 	private GameManager _gameManager;
 	private BoxCollider2D _boxCollider;
 	private Vector3 _mousePosition;
-	private Vector3 _screenPoint;
 	private Vector3 _oldPosition;
-	private List<Vector2> _moves = new List<Vector2>();
 	private bool _toPassant = false;
 	private int _moveCount = 0;
 
@@ -62,9 +62,38 @@ public class Piece : MonoBehaviour
 
 		if (isWhite == _gameManager.whiteTurn)
 		{
-			// Figure out potential moves
-			var moves = new List<Vector2>();
+			// Unselect all other pieces
+			_gameManager.boardManager.ClearHighlights();
+			_gameManager.boardManager.ClearIndicators();
+			_gameManager.boardManager.HighlightLastMove();
+
 			var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+
+			foreach (var piece in allPieces)
+			{
+				var script = piece.GetComponent<Piece>();
+				script.selected = false;
+			}
+
+			selected = true;
+
+			// Mark the tile behind it as highlighted/selected
+			var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
+
+			foreach (var tile in allTiles)
+			{
+				if ((Vector2)tile.transform.position == (Vector2)piecePosition)
+				{
+					var script = tile.GetComponent<Tile>();
+					var renderer = tile.GetComponent<SpriteRenderer>();
+
+					script.highlighted = true;
+					renderer.color = _gameManager.yellow;
+				}
+			}
+
+			// Figure out potential moves
+			moves.Clear();
 
 			switch (pieceType)
 			{
@@ -321,8 +350,6 @@ public class Piece : MonoBehaviour
 			};
 
 			// Create highlights for the moves
-			var allTiles = GameObject.FindGameObjectsWithTag("Tiles");
-
 			foreach (var tile in allTiles)
 			{
 				foreach (var move in moves)
@@ -349,8 +376,6 @@ public class Piece : MonoBehaviour
 					_gameManager.boardManager.DrawIndicator(tile, move, takes);
 				}
 			}
-
-			_moves = moves;
 		}
 	}
 
@@ -366,9 +391,6 @@ public class Piece : MonoBehaviour
 	{
 		if (isWhite == _gameManager.whiteTurn)
 		{
-			// Clear all highlights
-			_gameManager.boardManager.ClearIndicators();
-
 			// Figure out the piece's new position
 			var px = Mathf.Round(_mousePosition.x);
 			var py = Mathf.Round(_mousePosition.y);
@@ -382,7 +404,7 @@ public class Piece : MonoBehaviour
 			var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
 			var positionHasChanged = newPosition != _oldPosition;
 			var isPlayersTurn = (isWhite && _gameManager.whiteTurn) || (!isWhite && !_gameManager.whiteTurn);
-			var isMoveLegal = _moves.Contains(new Vector2(newPosition.x, newPosition.y));
+			var isMoveLegal = moves.Contains(new Vector2(newPosition.x, newPosition.y));
 
 			if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
 			{
@@ -416,9 +438,6 @@ public class Piece : MonoBehaviour
 			{
 				transform.position = _oldPosition;
 			}
-
-			// Clear the moves
-			_moves.Clear();
 		}
 		else
 		{
@@ -426,7 +445,7 @@ public class Piece : MonoBehaviour
 		}
 	}
 
-	private void MakeMove(GameObject piece, Vector3 oldPosition, Vector3 newPosition)
+	public void MakeMove(GameObject piece, Vector3 oldPosition, Vector3 newPosition)
 	{
 		var pieceScript = piece.GetComponent<Piece>();
 		pieceScript._moveCount++;
@@ -440,11 +459,15 @@ public class Piece : MonoBehaviour
 		// Append the move to notation
 		_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
 
+		// Clear all highlights and indicators
+		_gameManager.boardManager.ClearHighlights();
+		_gameManager.boardManager.ClearIndicators();
+
 		// Highlight the last move
 		_gameManager.boardManager.HighlightLastMove();
 
 		// Invert the turn variable
-		_gameManager.whiteTurn = !_gameManager.whiteTurn;
+		_gameManager.whiteTurn = pieceScript.isWhite ? false : true;
 
 		// Manage the taking of pieces!
 		var allPieces = GameObject.FindGameObjectsWithTag("Pieces");

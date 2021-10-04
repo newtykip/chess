@@ -89,7 +89,7 @@ public class BoardManager : MonoBehaviour
 			}
 		}
 
-		// If a left click is detected, reset all tile colours
+		// If a left click is detected...
 		else if (Input.GetMouseButtonDown(0))
 		{
 			foreach (Transform tile in tileContainer.transform)
@@ -97,7 +97,7 @@ public class BoardManager : MonoBehaviour
 				var script = tile.gameObject.GetComponent<Tile>();
 				var renderer = tile.gameObject.GetComponent<SpriteRenderer>();
 
-				// Ignore yellow, as that is only for previous move highlighting
+				// Reset all tile colours but ignore yellow, as that is only for previous move highlighting
 				if (renderer.color != _gameManager.yellow)
 				{
 					if (script.highlighted)
@@ -111,6 +111,30 @@ public class BoardManager : MonoBehaviour
 					}
 
 					script.indicator = false;
+				}
+
+				// If the tile is a legal move of the currently selected piece
+				var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
+
+				foreach (var piece in allPieces)
+				{
+					var pieceScript = piece.GetComponent<Piece>();
+
+					if (pieceScript.selected)
+					{
+						// Check if the selected tile is in the piece's moves
+						foreach (var move in pieceScript.moves)
+						{
+							var oldPosition = piece.transform.position;
+							var newPosition = new Vector3(move.x, move.y, piece.transform.position.z);
+
+							// If so, and the move deemed valid, make the move
+							if (move == tilePosition && oldPosition != newPosition)
+							{
+								pieceScript.MakeMove(piece, oldPosition, newPosition);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -164,18 +188,13 @@ public class BoardManager : MonoBehaviour
 
 		if (lastMove != null)
 		{
+			ClearHighlights();
+
 			foreach (Transform tile in tileContainer.transform)
 			{
 				Vector2 position = tile.transform.position;
 				var script = tile.GetComponent<Tile>();
 				var renderer = tile.GetComponent<SpriteRenderer>();
-
-				// If the tile was already highlighted, unhilight it
-				if (script.highlighted)
-				{
-					renderer.color = script.defaultColour;
-					script.highlighted = false;
-				}
 
 				// Otherwise, highlight the tile
 				if (position == lastMove.Value.from || position == lastMove.Value.to)
@@ -183,6 +202,22 @@ public class BoardManager : MonoBehaviour
 					renderer.color = _gameManager.yellow;
 					script.highlighted = true;
 				}
+			}
+		}
+	}
+
+	public void ClearHighlights()
+	{
+		foreach (Transform tile in tileContainer.transform)
+		{
+			var script = tile.GetComponent<Tile>();
+
+			if (script.highlighted)
+			{
+				var renderer = tile.GetComponent<SpriteRenderer>();
+				renderer.color = script.defaultColour;
+
+				script.highlighted = false;
 			}
 		}
 	}
