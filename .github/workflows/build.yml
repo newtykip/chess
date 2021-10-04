@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: 
-    
+  workflow_dispatch:
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -24,10 +23,13 @@ jobs:
           - StandaloneWindows64
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-            lfs: true
+          lfs: true
+
+      - name: Checkout Submodules
+        uses: textbook/git-checkout-submodule-action@master
 
       - name: Cache
         uses: actions/cache@v2

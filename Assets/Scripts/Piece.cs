@@ -394,10 +394,10 @@ public class Piece : MonoBehaviour
 				// todo: make this... better
 				if (_gameManager.stockfishEnabled)
 				{
-					_gameManager.Stockfish.SetPosition(_gameManager.moveNotations);
+					_gameManager.stockfish.SetPosition(_gameManager.moveNotations);
 
 					var k = 0f;
-					var stockfishMove = _gameManager.Stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
+					var stockfishMove = _gameManager.stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
 
 					var stockfishFrom = new Vector3(Array.IndexOf(_alpha, stockfishMove[0][0]) + 1, 0, _oldPosition.z);
 					float.TryParse(stockfishMove[0][1].ToString(), out stockfishFrom.y);
