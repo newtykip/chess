@@ -1,9 +1,9 @@
 name: Build Chess for all supported platforms
 
 on:
-  push:
-    branches:
-      - main
+  create:
+    tags:
+      - "**"
   workflow_dispatch:
 
 env:
