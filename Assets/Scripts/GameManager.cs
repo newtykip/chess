@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
 	{
 		// Get the audio manager
 		audioManager = GetComponent<AudioManager>();
-		
+
 		// Reverse the starting position because I want the list to mirror the board in the code kljfsadjkhsa
 		_startingPosition.Reverse();
 
@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 				Instantiate(tilePrefab, new Vector3(x, y, 1), Quaternion.identity, board.transform);
 			}
 		}
-		
+
 		// Draw the board's pieces
 		for (var y = 1; y < _startingPosition.Count + 1; y++)
 		{
@@ -65,7 +65,7 @@ public class GameManager : MonoBehaviour
 	public void Update()
 	{
 		// Handle global keybinds
-		if (Input.GetKeyDown("escape"))
+		if (Input.GetKeyDown(KeyCode.Escape))
 		{
 			Application.Quit();
 		}

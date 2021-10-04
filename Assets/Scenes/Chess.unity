@@ -582,6 +582,7 @@ GameObject:
   - component: {fileID: 436877847}
   - component: {fileID: 436877846}
   - component: {fileID: 436877848}
+  - component: {fileID: 436877849}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Manager
@@ -607,7 +608,9 @@ MonoBehaviour:
   pieces: {fileID: 199066720}
   audioManager: {fileID: 0}
   whiteTurn: 1
+  stockfishEnabled: 0
   boardSize: 8
+  moveNotations: []
 --- !u!4 &436877847
 Transform:
   m_ObjectHideFlags: 0
@@ -635,6 +638,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placeSoundStore: {fileID: 251027788}
+--- !u!114 &436877849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436877845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7a2923a2c814b1a9169a914e1d39f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrows: {fileID: 1548688312}
+  arrowMaterial: {fileID: 2100000, guid: adae261595e6e6443ac953424c4a53b8, type: 2}
+  arrowHeadPrefab: {fileID: 6640933613997911897, guid: 9f814b5db49874646a4b3709e65645dd, type: 3}
 --- !u!1 &919212379
 GameObject:
   m_ObjectHideFlags: 0
@@ -693,6 +711,36 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 251027789}
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1548688312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1548688313}
+  m_Layer: 0
+  m_Name: Arrows
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1548688313
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1548688312}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.9451323, y: 2.5055838, z: 11.806495}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
