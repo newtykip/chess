@@ -5,7 +5,6 @@ public class ArrowManager : MonoBehaviour
 	public GameObject arrowContainer;
 	public Material arrowMaterial;
 	public GameObject arrowHeadPrefab;
-	public GameObject gameManagerObject;
 
 	private GameManager _gameManager;
 	private Vector2 _arrowStart;
@@ -13,7 +12,7 @@ public class ArrowManager : MonoBehaviour
 
 	public void Start()
 	{
-		_gameManager = gameManagerObject.GetComponent<GameManager>();
+		_gameManager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
 	}
 
 	public void Update()
@@ -26,7 +25,7 @@ public class ArrowManager : MonoBehaviour
 		}
 
 		// Once the button has been released, draw the arrow
-		if (Input.GetMouseButtonUp(1))
+		else if (Input.GetMouseButtonUp(1))
 		{
 			var mousePosition = Camera.main.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
 			_arrowEnd = new Vector2(Mathf.Round(mousePosition.x), Mathf.Round(mousePosition.y));
@@ -45,6 +44,8 @@ public class ArrowManager : MonoBehaviour
 					var head = arrow.GetChild(0);
 
 					// If the arrow heads are touching
+					// todo: check if arrows are exact duplicates by not just checking heads, but start
+					// todo: positions too
 					if ((Vector2)head.transform.position == _arrowEnd)
 					{
 						isDuplicate = true;
@@ -54,19 +55,20 @@ public class ArrowManager : MonoBehaviour
 
 				if (!isDuplicate)
 				{
-					// todo: make prettier colours
 					// The default arrow colour is orange
-					var colour = new Color32(255, 165, 0, 200);
+					var colour = _gameManager.orange;
 
 					// Hold down ctrl for a red arrow
 					if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-						colour = new Color32(255, 50, 50, 200);
+						colour = _gameManager.red;
+
 					// Hold down alt for a blue arrow
 					else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
-						colour = new Color32(50, 150, 255, 200);
+						colour = _gameManager.blue;
+
 					// Hold down shift for a green arrow
 					else if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-						colour = new Color32(50, 255, 50, 200);
+						colour = _gameManager.green;
 
 					DrawArrow(_arrowStart, _arrowEnd, colour);
 				}
@@ -74,7 +76,7 @@ public class ArrowManager : MonoBehaviour
 		}
 
 		// Clear all arrowContainer on a left click
-		if (Input.GetMouseButtonDown(0))
+		else if (Input.GetMouseButtonDown(0))
 		{
 			ClearArrows();
 		}
