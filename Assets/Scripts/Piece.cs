@@ -27,7 +27,7 @@ public class Piece : MonoBehaviour
 		_boxCollider = gameObject.GetComponent<BoxCollider2D>();
 
 		// Determine the piece's colour and type
-		isWhite = char.IsLower(code);
+		isWhite = char.IsUpper(code);
 
 		pieceType = char.ToLower(code) switch
 		{
@@ -453,7 +453,6 @@ public class Piece : MonoBehaviour
 
 			// Ensure that the piece does not delete itself
 			if (p.transform.position != piece.transform.position || p == piece) continue;
-
 
 			// Protect pieces from being taken by pieces of their own colour
 			if (script.isWhite == pieceScript.isWhite)

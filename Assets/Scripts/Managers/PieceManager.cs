@@ -35,12 +35,6 @@ public class PieceManager : MonoBehaviour
 		"rnbqkbnr"
 	};
 
-	public void Start()
-	{
-		// Reverse the starting position because I want the list to mirror the board in the code kljfsadjkhsa
-		_startingPosition.Reverse();
-	}
-
 	public void DrawPieces()
 	{
 		// Draw the board's pieces
