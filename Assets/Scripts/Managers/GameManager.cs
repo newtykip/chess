@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
 	public bool whiteTurn = true;
 	public bool stockfishEnabled = false;
 	public List<string> moveNotations = new List<string>();
-	public Stockfish Stockfish;
+	public NETfish.Stockfish stockfish;
 
 	public Color32 orange = new Color32(255, 165, 0, 200);
 	public Color32 red = new Color32(255, 50, 50, 200);
@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
 	public void Start()
 	{
 		// Start Stockfish
-		Stockfish = new Stockfish($"{Application.streamingAssetsPath}/stockfish14.exe");
+		stockfish = new NETfish.Stockfish($"{Application.streamingAssetsPath}/stockfish14.exe");
 
 		// Begin the game
 		boardManager.DrawTiles();
