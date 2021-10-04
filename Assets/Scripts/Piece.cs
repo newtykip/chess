@@ -358,9 +358,8 @@ public class Piece : MonoBehaviour
 	{
 		// Update the position of the piece to the new mouse positions
 		_mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y));
-		_mousePosition.z = -2;
 
-		transform.position = _mousePosition;
+		transform.position = new Vector3(_mousePosition.x, _mousePosition.y, -5);
 	}
 
 	public void OnMouseUp()
