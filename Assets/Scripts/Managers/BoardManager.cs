@@ -116,15 +116,17 @@ public class BoardManager : MonoBehaviour
 				// If the tile is a legal move of the currently selected piece
 				var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
-				foreach (var piece in allPieces)
+				for (var i = 0; i < allPieces.Length; i++)
 				{
+					var piece = allPieces[i];
 					var pieceScript = piece.GetComponent<Piece>();
 
 					if (pieceScript.selected)
 					{
 						// Check if the selected tile is in the piece's moves
-						foreach (var move in pieceScript.moves)
+						for (var j = 0; j < pieceScript.moveList.Count; j++)
 						{
+							var move = pieceScript.moveList[j];
 							var oldPosition = piece.transform.position;
 							var newPosition = new Vector3(move.x, move.y, piece.transform.position.z);
 
@@ -197,7 +199,7 @@ public class BoardManager : MonoBehaviour
 				var renderer = tile.GetComponent<SpriteRenderer>();
 
 				// Otherwise, highlight the tile
-				if (position == lastMove.Value.from || position == lastMove.Value.to)
+				if (position == lastMove.Value.From || position == lastMove.Value.To)
 				{
 					renderer.color = _gameManager.yellow;
 					script.highlighted = true;
