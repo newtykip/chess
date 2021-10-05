@@ -585,6 +585,7 @@ GameObject:
   - component: {fileID: 436877849}
   - component: {fileID: 436877851}
   - component: {fileID: 436877850}
+  - component: {fileID: 436877852}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Manager
@@ -605,11 +606,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioManager: {fileID: 436877848}
-  pieceManager: {fileID: 436877850}
-  arrowManager: {fileID: 436877849}
-  boardManager: {fileID: 436877851}
+  pieces: {fileID: 436877850}
+  arrows: {fileID: 436877849}
+  board: {fileID: 436877851}
+  stockfish: {fileID: 436877852}
   whiteTurn: 1
-  stockfishEnabled: 0
   moveNotations: []
   orange:
     serializedVersion: 2
@@ -623,6 +624,10 @@ MonoBehaviour:
   green:
     serializedVersion: 2
     rgba: 3358785330
+  yellow:
+    serializedVersion: 2
+    rgba: 4281517018
+  alphabet: 6100620063006400650066006700680069006a006b006c006d006e006f0070007100720073007400750076007700780079007a00
 --- !u!4 &436877847
 Transform:
   m_ObjectHideFlags: 0
@@ -709,6 +714,20 @@ MonoBehaviour:
   takesIndicatorPrefab: {fileID: 2148754855103528489, guid: 4e27de4677a93344c938623bb0bf96bf, type: 3}
   tileContainer: {fileID: 919212379}
   size: 8
+--- !u!114 &436877852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436877845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e945f881fee378e40a37e206377d88df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isEnabled: 1
+  isWhite: 0
 --- !u!1 &919212379
 GameObject:
   m_ObjectHideFlags: 0

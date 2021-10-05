@@ -2,29 +2,16 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct HistoricalMove
-{
-	public HistoricalMove(Vector2 From, Vector2 To)
-	{
-		from = From;
-		to = To;
-	}
-
-	public Vector2 from { get; }
-	public Vector2 to { get; }
-}
-
 public class GameManager : MonoBehaviour
 {
 	public AudioManager audioManager;
-	public PieceManager pieceManager;
-	public ArrowManager arrowManager;
-	public BoardManager boardManager;
+	public PieceManager pieces;
+	public ArrowManager arrows;
+	public BoardManager board;
+	public StockfishManager stockfish;
 
 	public bool whiteTurn = true;
-	public bool stockfishEnabled = false;
 	public List<string> moveNotations = new List<string>();
-	public NETfish.Stockfish stockfish;
 
 	public Color32 orange = new Color32(255, 165, 0, 200);
 	public Color32 red = new Color32(255, 50, 50, 200);
@@ -36,12 +23,9 @@ public class GameManager : MonoBehaviour
 
 	public void Start()
 	{
-		// Start Stockfish
-		stockfish = new NETfish.Stockfish($"{Application.streamingAssetsPath}/stockfish14.exe");
-
 		// Begin the game
-		boardManager.DrawTiles();
-		pieceManager.DrawPieces();
+		board.DrawTiles();
+		pieces.DrawPieces();
 	}
 
 	public void Update()
@@ -58,7 +42,7 @@ public class GameManager : MonoBehaviour
 		return $"{alphabet[Mathf.RoundToInt(position.x) - 1]}{position.y}";
 	}
 
-	public HistoricalMove? GetHistoricalMove(int movesBack)
+	public MoveSet? GetHistoricalMove(int movesBack)
 	{
 		try
 		{
@@ -70,7 +54,7 @@ public class GameManager : MonoBehaviour
 			var toX = Array.IndexOf(alphabet, lastMoveNotation.Substring(2)[0]) + 1;
 			var toY = Convert.ToInt32(lastMoveNotation.Substring(2)[1].ToString());
 
-			return new HistoricalMove(new Vector2(fromX, fromY), new Vector2(toX, toY));
+			return new MoveSet(new Vector2(fromX, fromY), new Vector2(toX, toY));
 		}
 		catch (ArgumentOutOfRangeException)
 		{

@@ -10,14 +10,14 @@ public class Piece : MonoBehaviour
 	public string pieceType;
 	public char code;
 	public bool selected = false;
-	public List<Vector2> moves = new List<Vector2>();
+	public List<Vector2> moveList = new List<Vector2>();
+	public int moveCount = 0;
 
 	private GameManager _gameManager;
 	private BoxCollider2D _boxCollider;
 	private Vector3 _mousePosition;
 	private Vector3 _oldPosition;
 	private bool _toPassant = false;
-	private int _moveCount = 0;
 
 	public void Start()
 	{
@@ -44,13 +44,13 @@ public class Piece : MonoBehaviour
 
 		gameObject.GetComponent<SpriteRenderer>().sprite = pieceType switch
 		{
-			"Rook" => isWhite ? _gameManager.pieceManager.whiteRook : _gameManager.pieceManager.blackRook,
-			"Knight" => isWhite ? _gameManager.pieceManager.whiteKnight : _gameManager.pieceManager.blackKnight,
-			"Bishop" => isWhite ? _gameManager.pieceManager.whiteBishop : _gameManager.pieceManager.blackBishop,
-			"Queen" => isWhite ? _gameManager.pieceManager.whiteQueen : _gameManager.pieceManager.blackQueen,
-			"King" => isWhite ? _gameManager.pieceManager.whiteKing : _gameManager.pieceManager.blackKing,
-			"Pawn" => isWhite ? _gameManager.pieceManager.whitePawn : _gameManager.pieceManager.blackPawn,
-			_ => isWhite ? _gameManager.pieceManager.whitePawn : _gameManager.pieceManager.blackPawn
+			"Rook" => isWhite ? _gameManager.pieces.whiteRook : _gameManager.pieces.blackRook,
+			"Knight" => isWhite ? _gameManager.pieces.whiteKnight : _gameManager.pieces.blackKnight,
+			"Bishop" => isWhite ? _gameManager.pieces.whiteBishop : _gameManager.pieces.blackBishop,
+			"Queen" => isWhite ? _gameManager.pieces.whiteQueen : _gameManager.pieces.blackQueen,
+			"King" => isWhite ? _gameManager.pieces.whiteKing : _gameManager.pieces.blackKing,
+			"Pawn" => isWhite ? _gameManager.pieces.whitePawn : _gameManager.pieces.blackPawn,
+			_ => isWhite ? _gameManager.pieces.whitePawn : _gameManager.pieces.blackPawn
 		};
 	}
 
@@ -63,9 +63,9 @@ public class Piece : MonoBehaviour
 		if (isWhite == _gameManager.whiteTurn)
 		{
 			// Unselect all other pieces
-			_gameManager.boardManager.ClearHighlights();
-			_gameManager.boardManager.ClearIndicators();
-			_gameManager.boardManager.HighlightLastMove();
+			_gameManager.board.ClearHighlights();
+			_gameManager.board.ClearIndicators();
+			_gameManager.board.HighlightLastMove();
 
 			var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
@@ -93,7 +93,7 @@ public class Piece : MonoBehaviour
 			}
 
 			// Figure out potential moves
-			moves.Clear();
+			var moves = new List<Vector2>();
 
 			switch (pieceType)
 			{
@@ -125,7 +125,7 @@ public class Piece : MonoBehaviour
 					}
 
 					// Initial move forward 2 if another piece is not in the way
-					if (((isWhite && piecePosition.y == 2) || (!isWhite && _oldPosition.y == _gameManager.boardManager.size - 1)) && !forwardTwoObstructed)
+					if (((isWhite && piecePosition.y == 2) || (!isWhite && _oldPosition.y == _gameManager.board.size - 1)) && !forwardTwoObstructed)
 					{
 						moves.Add(forwardTwo);
 					}
@@ -184,7 +184,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y + 2 == 7 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y + 2 == 7 && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, 1));
@@ -200,7 +200,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y + 2 == 7 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y + 2 == 7 && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, 1));
@@ -221,7 +221,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y - 2 == 2 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y - 2 == 2 && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, -1));
@@ -237,7 +237,7 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.to && lastMove.Value.to.y - 2 == 2 && enemyScript._moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y - 2 == 2 && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
 										moves.Add(enemyPosition + new Vector2(0, -1));
@@ -262,7 +262,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Queen":
-					for (var i = 0; i < _gameManager.boardManager.size; i++)
+					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
 						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
@@ -281,7 +281,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Bishop":
-					for (var i = 0; i < _gameManager.boardManager.size; i++)
+					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Vertical
 						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
@@ -292,7 +292,7 @@ public class Piece : MonoBehaviour
 
 					break;
 				case "Rook":
-					for (var i = 0; i < _gameManager.boardManager.size; i++)
+					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
 						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
@@ -329,8 +329,8 @@ public class Piece : MonoBehaviour
 					var isMoveOverlapping = move == (Vector2)piece.transform.position && pieceScript.isWhite == isWhite;
 
 					// Check if the move is out of bounds
-					var isMoveOutOfBounds = move.x > _gameManager.boardManager.size || move.x < 1 ||
-											move.y > _gameManager.boardManager.size ||
+					var isMoveOutOfBounds = move.x > _gameManager.board.size || move.x < 1 ||
+											move.y > _gameManager.board.size ||
 											move.y < 1;
 
 					if (isMoveOutOfBounds || isMoveOverlapping || move == (Vector2)_oldPosition)
@@ -373,9 +373,11 @@ public class Piece : MonoBehaviour
 						}
 					}
 
-					_gameManager.boardManager.DrawIndicator(tile, move, takes);
+					_gameManager.board.DrawIndicator(tile, move, takes);
 				}
 			}
+
+			moveList = moves;
 		}
 	}
 
@@ -404,35 +406,11 @@ public class Piece : MonoBehaviour
 			var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
 			var positionHasChanged = newPosition != _oldPosition;
 			var isPlayersTurn = (isWhite && _gameManager.whiteTurn) || (!isWhite && !_gameManager.whiteTurn);
-			var isMoveLegal = moves.Contains(new Vector2(newPosition.x, newPosition.y));
+			var isMoveLegal = moveList.Contains(new Vector2(newPosition.x, newPosition.y));
 
 			if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
 			{
 				MakeMove(gameObject, _oldPosition, newPosition);
-
-				// Temporary Stockfish AI for black 
-				// todo: make this... better
-				if (_gameManager.stockfishEnabled)
-				{
-					_gameManager.stockfish.SetPosition(_gameManager.moveNotations);
-
-					var k = 0f;
-					var stockfishMove = _gameManager.stockfish.GetBestMove().ToLookup(c => Math.Floor(k++ / 2)).Select(e => new string(e.ToArray())).ToArray();
-
-					var stockfishFrom = new Vector3(Array.IndexOf(_gameManager.alphabet, stockfishMove[0][0]) + 1, 0, _oldPosition.z);
-					float.TryParse(stockfishMove[0][1].ToString(), out stockfishFrom.y);
-
-					var stockfishTo = new Vector3(Array.IndexOf(_gameManager.alphabet, stockfishMove[1][0]) + 1, 0, _oldPosition.z);
-					float.TryParse(stockfishMove[1][1].ToString(), out stockfishTo.y);
-
-					var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
-
-					foreach (var piece in allPieces)
-					{
-						if (piece.transform.position != stockfishFrom) continue;
-						MakeMove(piece, stockfishFrom, stockfishTo);
-					}
-				}
 			}
 			else
 			{
@@ -445,10 +423,13 @@ public class Piece : MonoBehaviour
 		}
 	}
 
-	public void MakeMove(GameObject piece, Vector3 oldPosition, Vector3 newPosition)
+	public void MakeMove(GameObject piece, Vector3 oldPosition, Vector3 newPosition, bool handleStockfish = true)
 	{
+		oldPosition.z = -2;
+		newPosition.z = -2;
+
 		var pieceScript = piece.GetComponent<Piece>();
-		pieceScript._moveCount++;
+		pieceScript.moveCount++;
 
 		// Move the piece
 		piece.transform.position = newPosition;
@@ -459,15 +440,15 @@ public class Piece : MonoBehaviour
 		// Append the move to notation
 		_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
 
-		// Clear all highlights and indicators
-		_gameManager.boardManager.ClearHighlights();
-		_gameManager.boardManager.ClearIndicators();
-
-		// Highlight the last move
-		_gameManager.boardManager.HighlightLastMove();
-
 		// Invert the turn variable
 		_gameManager.whiteTurn = pieceScript.isWhite ? false : true;
+
+		// Clear all highlights and indicators
+		_gameManager.board.ClearHighlights();
+		_gameManager.board.ClearIndicators();
+
+		// Highlight the last move
+		_gameManager.board.HighlightLastMove();
 
 		// Manage the taking of pieces!
 		var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
@@ -505,6 +486,23 @@ public class Piece : MonoBehaviour
 
 			Destroy(p);
 		}
+
+		// Clear the move list and log the new best move
+		pieceScript.moveList.Clear();
+
+		// Handle Stockfish's move
+		if (_gameManager.stockfish.isEnabled && handleStockfish)
+		{
+			var bestMove = _gameManager.stockfish.GetBestMove();
+
+			foreach (var p in allPieces)
+			{
+				if ((Vector2)p.transform.position == bestMove.From)
+				{
+					MakeMove(p, bestMove.From, bestMove.To, false);
+				}
+			}
+		}
 	}
 
 	private Collider2D DrawRay(Vector2 direction, float distance, Color color)
@@ -514,7 +512,7 @@ public class Piece : MonoBehaviour
 		var position = transform.position;
 		var hit = Physics2D.Raycast(position, direction, distance);
 
-		if (_gameManager.pieceManager.drawRays) Debug.DrawRay(position, direction * distance, color, 3);
+		if (_gameManager.pieces.drawRays) Debug.DrawRay(position, direction * distance, color, 3);
 
 		_boxCollider.enabled = true;
 
@@ -527,7 +525,7 @@ public class Piece : MonoBehaviour
 
 		foreach (var direction in directions)
 		{
-			var ray = DrawRay(direction, _gameManager.boardManager.size, Color.blue);
+			var ray = DrawRay(direction, _gameManager.board.size, Color.blue);
 
 			if (ray != null)
 			{
@@ -538,7 +536,7 @@ public class Piece : MonoBehaviour
 				{
 					// If a piece has hits another piece with its top ray, remove all of the moves ahead of the collided piece
 					case 1:
-						for (var i = 1; i < _gameManager.boardManager.size + 1; i++)
+						for (var i = 1; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(position.x, collidedPosition.y + i));
 						}
@@ -547,7 +545,7 @@ public class Piece : MonoBehaviour
 
 					// If a piece has hits another piece with its bottom ray, remove all of the moves behind the collided piece
 					case -1:
-						for (var i = 1; i < _gameManager.boardManager.size + 1; i++)
+						for (var i = 1; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(position.x, collidedPosition.y - i));
 						}
@@ -559,7 +557,7 @@ public class Piece : MonoBehaviour
 				{
 					// If a piece hits another piece with its left ray, remove all of the moves to the left of the collided piece
 					case -1:
-						for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+						for (var i = 0; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x - i, position.y));
 						}
@@ -568,7 +566,7 @@ public class Piece : MonoBehaviour
 
 					// If a piece hits another piece with its right ray, remove all of the moves to the right of the collided piece
 					case 1:
-						for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+						for (var i = 0; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x + i, position.y));
 						}
@@ -592,7 +590,7 @@ public class Piece : MonoBehaviour
 
 		foreach (var direction in directions)
 		{
-			var ray = DrawRay(direction, _gameManager.boardManager.size, Color.red);
+			var ray = DrawRay(direction, _gameManager.board.size, Color.red);
 
 			if (ray != null)
 			{
@@ -607,7 +605,7 @@ public class Piece : MonoBehaviour
 						{
 							// ...left...
 							case -1:
-								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+								for (var i = 0; i < _gameManager.board.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y + i));
 								}
@@ -616,7 +614,7 @@ public class Piece : MonoBehaviour
 
 							// ...right...
 							case 1:
-								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+								for (var i = 0; i < _gameManager.board.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y + i));
 								}
@@ -633,7 +631,7 @@ public class Piece : MonoBehaviour
 						{
 							// ...left...
 							case -1:
-								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+								for (var i = 0; i < _gameManager.board.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x - i, collidedPosition.y - i));
 								}
@@ -642,7 +640,7 @@ public class Piece : MonoBehaviour
 
 							// ...right...
 							case 1:
-								for (var i = 0; i < _gameManager.boardManager.size + 1; i++)
+								for (var i = 0; i < _gameManager.board.size + 1; i++)
 								{
 									moves.Remove(new Vector2(collidedPosition.x + i, collidedPosition.y - i));
 								}
