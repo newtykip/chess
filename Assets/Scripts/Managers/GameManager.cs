@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,31 +10,38 @@ public class GameManager : MonoBehaviour
 	public ArrowManager arrows;
 	public BoardManager board;
 	public StockfishManager stockfish;
-
-	public bool whiteStarts;
-	public bool whiteTurn;
+	public Counter gameCounter;
+	public bool whiteStarts = true;
+	public bool whiteTurn = true;
 	public List<string> moveNotations = new List<string>();
-
 	public Color32 orange = new Color32(255, 165, 0, 200);
 	public Color32 red = new Color32(255, 50, 50, 200);
 	public Color32 blue = new Color32(50, 150, 255, 200);
 	public Color32 green = new Color32(50, 255, 50, 200);
 	public Color32 yellow = new Color32(218, 195, 50, 255);
-
 	public char[] alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
+
+	private int whiteScore = 0;
+	private int blackScore = 0;
 
 	public void Start()
 	{
-		// Determine who is white and who is black
-		// todo: remove randomiser and start white, alt to black next game
-		var r = new System.Random();
-		whiteStarts = r.Next(100) < 50;
-		whiteTurn = whiteStarts;
-		stockfish.isWhite = !whiteTurn;
+		// Find the counters
+		var counters = GameObject.FindGameObjectsWithTag("Counters");
+
+		foreach (var counter in counters)
+		{
+			if (counter.name.ToLower() == "game number")
+			{
+				gameCounter = counter.GetComponent<Counter>();
+			}
+		}
+
+		// Draw the board
+		board.DrawTiles();
 
 		// Begin the game
-		board.DrawTiles();
-		pieces.DrawPieces(whiteStarts);
+		NewGame();
 	}
 
 	public void Update()
@@ -43,6 +51,26 @@ public class GameManager : MonoBehaviour
 		{
 			Application.Quit();
 		}
+	}
+
+	public void NewGame()
+	{
+		// Clear old highlights and indicators
+		board.ClearHighlights();
+		board.ClearIndicators();
+
+		// Clear the move notations
+		moveNotations.Clear();
+
+		// Configure the game
+		whiteStarts = !whiteStarts;
+		whiteTurn = whiteStarts;
+		stockfish.isWhite = !whiteTurn;
+		gameCounter.Add();
+
+		// Draw new pieces
+		pieces.DestroyPieces();
+		pieces.DrawPieces(whiteStarts);
 	}
 
 	public string GetAlgebraicNotation(Vector2 position)
