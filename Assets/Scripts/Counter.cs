@@ -34,4 +34,12 @@ public class Counter : MonoBehaviour
 
 		return _quantity;
 	}
+
+	public int Restart()
+	{
+		_quantity = 0;
+		UpdateDisplay();
+
+		return _quantity;
+	}
 }
