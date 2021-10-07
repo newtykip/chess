@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour
 	public ArrowManager arrows;
 	public BoardManager board;
 	public StockfishManager stockfish;
-	public Counter gameCounter;
 	public bool whiteStarts = true;
 	public bool whiteTurn = true;
 	public List<string> moveNotations = new List<string>();
@@ -21,8 +20,9 @@ public class GameManager : MonoBehaviour
 	public Color32 yellow = new Color32(218, 195, 50, 255);
 	public char[] alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
 
-	private int whiteScore = 0;
-	private int blackScore = 0;
+	private Counter gameCounter;
+	private Counter whiteScoreCounter;
+	private Counter blackScoreCounter;
 
 	public void Start()
 	{
@@ -31,9 +31,18 @@ public class GameManager : MonoBehaviour
 
 		foreach (var counter in counters)
 		{
-			if (counter.name.ToLower() == "game number")
+
+			switch (counter.name.ToLower())
 			{
-				gameCounter = counter.GetComponent<Counter>();
+				case "game number":
+					gameCounter = counter.GetComponent<Counter>();
+					break;
+				case "white score":
+					whiteScoreCounter = counter.GetComponent<Counter>();
+					break;
+				case "black score":
+					blackScoreCounter = counter.GetComponent<Counter>();
+					break;
 			}
 		}
 
@@ -53,7 +62,7 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	public void NewGame()
+	public void NewGame(bool? whiteWon = null)
 	{
 		// Clear old highlights and indicators
 		board.ClearHighlights();
@@ -67,6 +76,19 @@ public class GameManager : MonoBehaviour
 		whiteTurn = whiteStarts;
 		stockfish.isWhite = !whiteTurn;
 		gameCounter.Add();
+
+		// Add score if appropriate
+		if (whiteWon != null)
+		{
+			if (whiteWon.Value)
+			{
+				whiteScoreCounter.Add();
+			}
+			else
+			{
+				blackScoreCounter.Add();
+			}
+		}
 
 		// Draw new pieces
 		pieces.DestroyPieces();
