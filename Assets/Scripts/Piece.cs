@@ -98,10 +98,10 @@ public class Piece : MonoBehaviour
 			switch (pieceType)
 			{
 				case "Pawn":
-					var forwardOne = new Vector2(piecePosition.x, isWhite ? piecePosition.y + 1 : piecePosition.y - 1);
+					var forwardOne = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? isWhite ? 1 : -1 : isWhite ? -1 : 1));
 					var forwardOneObstructed = false;
 
-					var forwardTwo = new Vector2(piecePosition.x, isWhite ? piecePosition.y + 2 : piecePosition.y - 2);
+					var forwardTwo = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? isWhite ? 2 : -2 : isWhite ? -2 : 2));
 					var forwardTwoObstructed = false;
 
 					foreach (var piece in allPieces)
@@ -125,13 +125,13 @@ public class Piece : MonoBehaviour
 					}
 
 					// Initial move forward 2 if another piece is not in the way
-					if (((isWhite && piecePosition.y == 2) || (!isWhite && _oldPosition.y == _gameManager.board.size - 1)) && !forwardTwoObstructed)
+					if (moveCount == 0 && !forwardTwoObstructed)
 					{
 						moves.Add(forwardTwo);
 					}
 
 					// Offer the option to take pieces that are diagonally nearby
-					if (isWhite)
+					if (_gameManager.whiteStarts == isWhite)
 					{
 						var topLeft = DrawRay(Vector2.up + Vector2.left, 1, Color.magenta);
 						var topRight = DrawRay(Vector2.up + Vector2.right, 1, Color.magenta);
@@ -167,6 +167,7 @@ public class Piece : MonoBehaviour
 					}
 
 					// En Passant
+					// todo: fix for black starts
 					if (pieceType == "Pawn")
 					{
 						var lastMove = _gameManager.GetHistoricalMove(1);
@@ -184,10 +185,10 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y + 2 == 7 && enemyScript.moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, 1));
+										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
 									}
 								}
 							}
@@ -200,10 +201,10 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y + 2 == 7 && enemyScript.moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, 1));
+										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
 									}
 								}
 							}
@@ -221,10 +222,10 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)leftCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y - 2 == 2 && enemyScript.moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, -1));
+										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
 									}
 								}
 							}
@@ -237,10 +238,10 @@ public class Piece : MonoBehaviour
 								{
 									var enemyPosition = (Vector2)rightCast.transform.position;
 
-									if (enemyPosition == lastMove.Value.To && lastMove.Value.To.y - 2 == 2 && enemyScript.moveCount == 1)
+									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 									{
 										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, -1));
+										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
 									}
 								}
 							}
@@ -459,13 +460,13 @@ public class Piece : MonoBehaviour
 
 			if (script._toPassant)
 			{
-				if (script.isWhite && (newPosition.y == p.transform.position.y - 1))
+				if (script.isWhite && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? -1 : 1)))
 				{
 					Destroy(p);
 					return;
 				}
 
-				if (!script.isWhite && (newPosition.y == p.transform.position.y + 1))
+				if (!script.isWhite && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? 1 : -1)))
 				{
 					Destroy(p);
 					return;
