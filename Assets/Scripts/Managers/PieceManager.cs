@@ -35,8 +35,15 @@ public class PieceManager : MonoBehaviour
 		"rnbqkbnr"
 	};
 
-	public void DrawPieces()
+	public void DrawPieces(bool whiteStarts)
 	{
+		Debug.Log(whiteStarts);
+
+		if (!whiteStarts)
+		{
+			_startingPosition.Reverse();
+		}
+
 		// Draw the board's pieces
 		for (var y = 1; y < _startingPosition.Count + 1; y++)
 		{

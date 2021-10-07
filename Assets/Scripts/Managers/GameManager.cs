@@ -10,7 +10,8 @@ public class GameManager : MonoBehaviour
 	public BoardManager board;
 	public StockfishManager stockfish;
 
-	public bool whiteTurn = true;
+	public bool whiteStarts;
+	public bool whiteTurn;
 	public List<string> moveNotations = new List<string>();
 
 	public Color32 orange = new Color32(255, 165, 0, 200);
@@ -23,9 +24,16 @@ public class GameManager : MonoBehaviour
 
 	public void Start()
 	{
+		// Determine who is white and who is black
+		// todo: remove randomiser and start white, alt to black next game
+		var r = new System.Random();
+		whiteStarts = r.Next(100) < 50;
+		whiteTurn = whiteStarts;
+		stockfish.isWhite = !whiteTurn;
+
 		// Begin the game
 		board.DrawTiles();
-		pieces.DrawPieces();
+		pieces.DrawPieces(whiteStarts);
 	}
 
 	public void Update()
