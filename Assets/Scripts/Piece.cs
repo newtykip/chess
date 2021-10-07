@@ -441,9 +441,6 @@ public class Piece : MonoBehaviour
 		// Append the move to notation
 		_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
 
-		// Invert the turn variable
-		_gameManager.whiteTurn = pieceScript.isWhite ? false : true;
-
 		// Clear all highlights and indicators
 		_gameManager.board.ClearHighlights();
 		_gameManager.board.ClearIndicators();
@@ -488,11 +485,14 @@ public class Piece : MonoBehaviour
 			Destroy(p);
 		}
 
-		// Clear the move list and log the new best move
+		// Clear the move list
 		pieceScript.moveList.Clear();
 
+		// Invert the turn variable
+		_gameManager.whiteTurn = !_gameManager.whiteTurn;
+
 		// Handle Stockfish's move
-		if (_gameManager.stockfish.isEnabled && handleStockfish)
+		if (_gameManager.stockfish.isEnabled && handleStockfish && _gameManager.whiteTurn == _gameManager.stockfish.isWhite)
 		{
 			var bestMove = _gameManager.stockfish.GetBestMove();
 
