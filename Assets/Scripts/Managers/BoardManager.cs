@@ -6,6 +6,7 @@ public class BoardManager : MonoBehaviour
 	public GameObject legalIndicatorPrefab;
 	public GameObject takesIndicatorPrefab;
 	public GameObject tileContainer;
+	public Camera gameCamera;
 	public int size = 8;
 
 	private GameManager _gameManager;
@@ -221,6 +222,16 @@ public class BoardManager : MonoBehaviour
 
 				script.highlighted = false;
 			}
+		}
+	}
+
+	public void FlipBoard()
+	{
+		gameCamera.transform.rotation *= Quaternion.Euler(0, 0, 180);
+
+		foreach (Transform piece in _gameManager.pieces.piecesContainer.transform)
+		{
+			piece.transform.rotation *= Quaternion.Euler(0, 0, 180);
 		}
 	}
 }
