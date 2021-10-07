@@ -37,8 +37,7 @@ public class PieceManager : MonoBehaviour
 
 	public void DrawPieces(bool whiteStarts)
 	{
-		Debug.Log(whiteStarts);
-
+		// If black starts, reverse the starting position
 		if (!whiteStarts)
 		{
 			_startingPosition.Reverse();
@@ -55,6 +54,20 @@ public class PieceManager : MonoBehaviour
 				var pieceScript = piece.GetComponent<Piece>();
 				pieceScript.code = row[x - 1];
 			}
+		}
+
+		// If black started, restore the starting position
+		if (!whiteStarts)
+		{
+			_startingPosition.Reverse();
+		}
+	}
+
+	public void DestroyPieces()
+	{
+		foreach (Transform piece in piecesContainer.transform)
+		{
+			Destroy(piece.gameObject);
 		}
 	}
 }
