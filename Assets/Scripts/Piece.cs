@@ -1,20 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+public enum PieceType
+{
+	Unknown,
+	Pawn,
+	Rook,
+	Knight,
+	Bishop,
+	Queen,
+	King
+}
 
 public class Piece : MonoBehaviour
 {
 
 	public bool isWhite;
-	public string pieceType;
-	public char code;
+	public PieceType pieceType;
 	public bool selected = false;
 	public List<Vector2> moveList = new List<Vector2>();
 	public int moveCount = 0;
 
 	private GameManager _gameManager;
-	private BoxCollider2D _boxCollider;
 	private Vector3 _mousePosition;
 	private Vector3 _oldPosition;
 	private bool _toPassant = false;
@@ -23,35 +31,6 @@ public class Piece : MonoBehaviour
 	{
 		// Get components
 		_gameManager = GameObject.FindWithTag("Manager").GetComponent<GameManager>();
-		_boxCollider = gameObject.GetComponent<BoxCollider2D>();
-
-		// Determine the piece's colour and type
-		isWhite = char.IsUpper(code);
-
-		pieceType = char.ToLower(code) switch
-		{
-			'r' => "Rook",
-			'n' => "Knight",
-			'b' => "Bishop",
-			'q' => "Queen",
-			'k' => "King",
-			'p' => "Pawn",
-			_ => "Unknown"
-		};
-
-		// Update the game object's name and sprite
-		gameObject.name = $"{(isWhite ? "White" : "Black")} {pieceType}";
-
-		gameObject.GetComponent<SpriteRenderer>().sprite = pieceType switch
-		{
-			"Rook" => isWhite ? _gameManager.pieces.whiteRook : _gameManager.pieces.blackRook,
-			"Knight" => isWhite ? _gameManager.pieces.whiteKnight : _gameManager.pieces.blackKnight,
-			"Bishop" => isWhite ? _gameManager.pieces.whiteBishop : _gameManager.pieces.blackBishop,
-			"Queen" => isWhite ? _gameManager.pieces.whiteQueen : _gameManager.pieces.blackQueen,
-			"King" => isWhite ? _gameManager.pieces.whiteKing : _gameManager.pieces.blackKing,
-			"Pawn" => isWhite ? _gameManager.pieces.whitePawn : _gameManager.pieces.blackPawn,
-			_ => isWhite ? _gameManager.pieces.whitePawn : _gameManager.pieces.blackPawn
-		};
 	}
 
 	public void OnMouseDown()
@@ -97,7 +76,7 @@ public class Piece : MonoBehaviour
 
 			switch (pieceType)
 			{
-				case "Pawn":
+				case PieceType.Pawn:
 					var forwardOne = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? isWhite ? 1 : -1 : isWhite ? -1 : 1));
 					var forwardOneObstructed = false;
 
@@ -167,89 +146,86 @@ public class Piece : MonoBehaviour
 					}
 
 					// En Passant
-					// todo: fix for black starts
-					if (pieceType == "Pawn")
+					var lastMove = _gameManager.GetHistoricalMove(1);
+
+					if (isWhite)
 					{
-						var lastMove = _gameManager.GetHistoricalMove(1);
+						var leftCast = DrawRay(Vector2.left, 1, Color.yellow);
+						var rightCast = DrawRay(Vector2.right, 1, Color.yellow);
 
-						if (isWhite)
+						if (leftCast != null && lastMove != null)
 						{
-							var leftCast = DrawRay(Vector2.left, 1, Color.yellow);
-							var rightCast = DrawRay(Vector2.right, 1, Color.yellow);
+							var enemyScript = leftCast.gameObject.GetComponent<Piece>();
 
-							if (leftCast != null && lastMove != null)
+							if (!enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
 							{
-								var enemyScript = leftCast.gameObject.GetComponent<Piece>();
+								var enemyPosition = (Vector2)leftCast.transform.position;
 
-								if (!enemyScript.isWhite && enemyScript.pieceType == "Pawn")
+								if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 								{
-									var enemyPosition = (Vector2)leftCast.transform.position;
-
-									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
-									{
-										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
-									}
-								}
-							}
-
-							if (rightCast != null && lastMove != null)
-							{
-								var enemyScript = rightCast.gameObject.GetComponent<Piece>();
-
-								if (!enemyScript.isWhite && enemyScript.pieceType == "Pawn")
-								{
-									var enemyPosition = (Vector2)rightCast.transform.position;
-
-									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
-									{
-										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
-									}
+									enemyScript._toPassant = true;
+									moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
 								}
 							}
 						}
-						else
+
+						if (rightCast != null && lastMove != null)
 						{
-							var leftCast = DrawRay(Vector2.left, 1, Color.yellow);
-							var rightCast = DrawRay(Vector2.right, 1, Color.yellow);
+							var enemyScript = rightCast.gameObject.GetComponent<Piece>();
 
-							if (leftCast != null && lastMove != null)
+							if (!enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
 							{
-								var enemyScript = leftCast.gameObject.GetComponent<Piece>();
+								var enemyPosition = (Vector2)rightCast.transform.position;
 
-								if (enemyScript.isWhite && enemyScript.pieceType == "Pawn")
+								if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 								{
-									var enemyPosition = (Vector2)leftCast.transform.position;
-
-									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
-									{
-										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
-									}
+									enemyScript._toPassant = true;
+									moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? 1 : -1));
 								}
 							}
+						}
+					}
+					else
+					{
+						var leftCast = DrawRay(Vector2.left, 1, Color.yellow);
+						var rightCast = DrawRay(Vector2.right, 1, Color.yellow);
 
-							if (rightCast != null && lastMove != null)
+						if (leftCast != null && lastMove != null)
+						{
+							var enemyScript = leftCast.gameObject.GetComponent<Piece>();
+
+							if (enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
 							{
-								var enemyScript = rightCast.gameObject.GetComponent<Piece>();
+								var enemyPosition = (Vector2)leftCast.transform.position;
 
-								if (enemyScript.isWhite && enemyScript.pieceType == "Pawn")
+								if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
 								{
-									var enemyPosition = (Vector2)rightCast.transform.position;
+									enemyScript._toPassant = true;
+									moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
+								}
+							}
+						}
 
-									if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
-									{
-										enemyScript._toPassant = true;
-										moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
-									}
+						if (rightCast != null && lastMove != null)
+						{
+							var enemyScript = rightCast.gameObject.GetComponent<Piece>();
+
+							if (enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
+							{
+								var enemyPosition = (Vector2)rightCast.transform.position;
+
+								if (enemyPosition == lastMove.Value.To && enemyScript.moveCount == 1)
+								{
+									enemyScript._toPassant = true;
+									moves.Add(enemyPosition + new Vector2(0, _gameManager.whiteStarts ? -1 : 1));
 								}
 							}
 						}
 					}
 
 					break;
-				case "King":
+
+				case PieceType.King:
 					// x x x
 					// x K x
 					// x x x
@@ -262,7 +238,8 @@ public class Piece : MonoBehaviour
 					}
 
 					break;
-				case "Queen":
+
+				case PieceType.Queen:
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
@@ -281,7 +258,8 @@ public class Piece : MonoBehaviour
 					}
 
 					break;
-				case "Bishop":
+
+				case PieceType.Bishop:
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Vertical
@@ -292,7 +270,8 @@ public class Piece : MonoBehaviour
 					}
 
 					break;
-				case "Rook":
+
+				case PieceType.Rook:
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
@@ -307,7 +286,8 @@ public class Piece : MonoBehaviour
 					}
 
 					break;
-				case "Knight":
+
+				case PieceType.Knight:
 					// L
 					moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y + 2));
 					moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y - 2));
@@ -344,9 +324,9 @@ public class Piece : MonoBehaviour
 			// Remove any moves where the piece would have to jump
 			moves = pieceType switch
 			{
-				"Rook" => RookRayChecks(moves),
-				"Bishop" => BishopRayChecks(moves),
-				"Queen" => QueenRayChecks(moves),
+				PieceType.Rook => RookRayChecks(moves),
+				PieceType.Bishop => BishopRayChecks(moves),
+				PieceType.Queen => QueenRayChecks(moves),
 				_ => moves
 			};
 
@@ -448,6 +428,28 @@ public class Piece : MonoBehaviour
 		// Highlight the last move
 		_gameManager.board.HighlightLastMove();
 
+		// Promotion
+		if (pieceScript.pieceType == PieceType.Pawn)
+		{
+			var position = piece.transform.position;
+
+			// todo: allow for promotion to pieces other than a queen
+			if (pieceScript.isWhite)
+			{
+				if (_gameManager.whiteStarts && position.y == _gameManager.board.size || !_gameManager.whiteStarts && position.y == 1)
+				{
+					_gameManager.pieces.InitPiece(piece, PieceType.Queen, isWhite);
+				}
+			}
+			else
+			{
+				if (_gameManager.whiteStarts && position.y == 1 || !_gameManager.whiteStarts && position.y == _gameManager.board.size)
+				{
+					_gameManager.pieces.InitPiece(piece, PieceType.Queen, isWhite);
+				}
+			}
+		}
+
 		// Manage the taking of pieces!
 		var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
@@ -455,6 +457,7 @@ public class Piece : MonoBehaviour
 		{
 			var script = p.GetComponent<Piece>();
 
+			// En Passant
 			if (script._toPassant)
 			{
 				if (script.isWhite && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? -1 : 1)))
@@ -508,15 +511,17 @@ public class Piece : MonoBehaviour
 
 	private Collider2D DrawRay(Vector2 direction, float distance, Color color)
 	{
-		_boxCollider.enabled = false;
+		// Disable the collider
+		var collider = gameObject.GetComponent<BoxCollider2D>();
+		collider.enabled = false;
 
+		// Draw the ray
 		var position = transform.position;
 		var hit = Physics2D.Raycast(position, direction, distance);
-
 		if (_gameManager.pieces.drawRays) Debug.DrawRay(position, direction * distance, color, 3);
 
-		_boxCollider.enabled = true;
-
+		// Re-enable the collider and return the hit
+		collider.enabled = true;
 		return hit.collider;
 	}
 
@@ -558,7 +563,7 @@ public class Piece : MonoBehaviour
 				{
 					// If a piece hits another piece with its left ray, remove all of the moves to the left of the collided piece
 					case -1:
-						for (var i = 0; i < _gameManager.board.size + 1; i++)
+						for (var i = 1; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x - i, position.y));
 						}
@@ -567,7 +572,7 @@ public class Piece : MonoBehaviour
 
 					// If a piece hits another piece with its right ray, remove all of the moves to the right of the collided piece
 					case 1:
-						for (var i = 0; i < _gameManager.board.size + 1; i++)
+						for (var i = 1; i < _gameManager.board.size + 1; i++)
 						{
 							moves.Remove(new Vector2(collidedPosition.x + i, position.y));
 						}
