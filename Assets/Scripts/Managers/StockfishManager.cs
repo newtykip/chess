@@ -3,6 +3,8 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
+// todo: sometimes stockfish will instead of moving a piece to take a piece simply swallow it up - investigate
+
 public class StockfishManager : MonoBehaviour
 {
 	public TextMeshProUGUI toggleButtonText;

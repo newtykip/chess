@@ -5,17 +5,11 @@ public class Counter : MonoBehaviour
 {
 	public string prefix;
 	public string suffix;
-	private int _quantity;
-	private TextMeshProUGUI _display;
-
-	public void Start()
-	{
-		_display = GetComponent<TextMeshProUGUI>();
-	}
+	private int _quantity = 0;
 
 	private void UpdateDisplay()
 	{
-		_display.text = $"{prefix ?? ""}{_quantity}{suffix ?? ""}";
+		GetComponent<TextMeshProUGUI>().text = $"{prefix ?? ""}{_quantity}{suffix ?? ""}";
 	}
 
 	public int Add(int amount = 1)
