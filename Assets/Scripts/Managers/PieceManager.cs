@@ -51,8 +51,19 @@ public class PieceManager : MonoBehaviour
 			for (var x = 1; x < row.Length + 1; x++)
 			{
 				var piece = Instantiate(piecePrefab, new Vector3(x, y, -2), Quaternion.identity, piecesContainer.transform);
-				var pieceScript = piece.GetComponent<Piece>();
-				pieceScript.code = row[x - 1];
+
+				var type = char.ToLower(row[x - 1]) switch
+				{
+					'p' => PieceType.Pawn,
+					'r' => PieceType.Rook,
+					'n' => PieceType.Knight,
+					'b' => PieceType.Bishop,
+					'q' => PieceType.Queen,
+					'k' => PieceType.King,
+					_ => PieceType.Unknown
+				};
+
+				InitPiece(piece, type, char.IsUpper(row[x - 1]), false);
 			}
 		}
 
@@ -61,6 +72,28 @@ public class PieceManager : MonoBehaviour
 		{
 			_startingPosition.Reverse();
 		}
+	}
+
+	public void InitPiece(GameObject piece, PieceType type, bool white, bool promoted = true)
+	{
+		var script = piece.GetComponent<Piece>();
+
+		// Update the script of the piece
+		script.isWhite = white;
+		script.pieceType = type;
+		piece.name = $"{(promoted ? "[PROMOTED] " : "")}{(script.isWhite ? "White" : "Black")} {script.pieceType}";
+
+		// Update the piece's sprite
+		piece.GetComponent<SpriteRenderer>().sprite = script.pieceType switch
+		{
+			PieceType.Rook => script.isWhite ? whiteRook : blackRook,
+			PieceType.Knight => script.isWhite ? whiteKnight : blackKnight,
+			PieceType.Bishop => script.isWhite ? whiteBishop : blackBishop,
+			PieceType.Queen => script.isWhite ? whiteQueen : blackQueen,
+			PieceType.King => script.isWhite ? whiteKing : blackKing,
+			PieceType.Pawn => script.isWhite ? whitePawn : blackPawn,
+			_ => script.isWhite ? whitePawn : blackPawn
+		};
 	}
 
 	public void DestroyPieces()
