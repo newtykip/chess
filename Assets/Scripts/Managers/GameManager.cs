@@ -20,32 +20,12 @@ public class GameManager : MonoBehaviour
 	public Color32 yellow = new Color32(218, 195, 50, 255);
 	public char[] alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
 
-	private Counter gameCounter;
-	private Counter whiteScoreCounter;
-	private Counter blackScoreCounter;
+	public Counter gameCounter;
+	public Counter whiteScoreCounter;
+	public Counter blackScoreCounter;
 
 	public void Start()
 	{
-		// Find the counters
-		var counters = GameObject.FindGameObjectsWithTag("Counters");
-
-		foreach (var counter in counters)
-		{
-
-			switch (counter.name.ToLower())
-			{
-				case "game number":
-					gameCounter = counter.GetComponent<Counter>();
-					break;
-				case "white score":
-					whiteScoreCounter = counter.GetComponent<Counter>();
-					break;
-				case "black score":
-					blackScoreCounter = counter.GetComponent<Counter>();
-					break;
-			}
-		}
-
 		// Draw the board
 		board.DrawTiles();
 
@@ -62,7 +42,7 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	public void NewGame(bool? whiteWon = null)
+	public void NewGame()
 	{
 		// Clear old highlights and indicators
 		board.ClearHighlights();
@@ -77,22 +57,15 @@ public class GameManager : MonoBehaviour
 		stockfish.isWhite = !whiteTurn;
 		gameCounter.Add();
 
-		// Add score if appropriate
-		if (whiteWon != null)
-		{
-			if (whiteWon.Value)
-			{
-				whiteScoreCounter.Add();
-			}
-			else
-			{
-				blackScoreCounter.Add();
-			}
-		}
-
 		// Draw new pieces
 		pieces.DestroyPieces();
 		pieces.DrawPieces(whiteStarts);
+	}
+
+	public void AddScore(bool whiteWon)
+	{
+		if (whiteWon) whiteScoreCounter.Add();
+		else blackScoreCounter.Add();
 	}
 
 	public string GetAlgebraicNotation(Vector2 position)
