@@ -69,7 +69,7 @@ public class GameManager : MonoBehaviour
 
 	public string GetAlgebraicNotation(Vector2 position)
 	{
-		return $"{alphabet[Mathf.RoundToInt(position.x) - 1]}{position.y}";
+		return $"{alphabet[Mathf.RoundToInt(position.x) - 1]}{Mathf.RoundToInt(position.y)}";
 	}
 
 	public MoveSet? GetHistoricalMove(int movesBack)
@@ -77,6 +77,7 @@ public class GameManager : MonoBehaviour
 		try
 		{
 			var lastMoveNotation = moveNotations[moveNotations.Count - movesBack];
+			var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 
 			var fromX = Array.IndexOf(alphabet, lastMoveNotation[0]) + 1;
 			var fromY = Convert.ToInt32(lastMoveNotation[1].ToString());

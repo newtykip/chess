@@ -79,20 +79,20 @@ public class PieceManager : MonoBehaviour
 		var script = piece.GetComponent<Piece>();
 
 		// Update the script of the piece
-		script.isWhite = white;
-		script.pieceType = type;
-		piece.name = $"{(promoted ? "[PROMOTED] " : "")}{(script.isWhite ? "White" : "Black")} {script.pieceType}";
+		script.white = white;
+		script.type = type;
+		piece.name = $"{(promoted ? "[PROMOTED] " : "")}{(script.white ? "White" : "Black")} {script.type}";
 
 		// Update the piece's sprite
-		piece.GetComponent<SpriteRenderer>().sprite = script.pieceType switch
+		piece.GetComponent<SpriteRenderer>().sprite = script.type switch
 		{
-			PieceType.Rook => script.isWhite ? whiteRook : blackRook,
-			PieceType.Knight => script.isWhite ? whiteKnight : blackKnight,
-			PieceType.Bishop => script.isWhite ? whiteBishop : blackBishop,
-			PieceType.Queen => script.isWhite ? whiteQueen : blackQueen,
-			PieceType.King => script.isWhite ? whiteKing : blackKing,
-			PieceType.Pawn => script.isWhite ? whitePawn : blackPawn,
-			_ => script.isWhite ? whitePawn : blackPawn
+			PieceType.Rook => script.white ? whiteRook : blackRook,
+			PieceType.Knight => script.white ? whiteKnight : blackKnight,
+			PieceType.Bishop => script.white ? whiteBishop : blackBishop,
+			PieceType.Queen => script.white ? whiteQueen : blackQueen,
+			PieceType.King => script.white ? whiteKing : blackKing,
+			PieceType.Pawn => script.white ? whitePawn : blackPawn,
+			_ => script.white ? whitePawn : blackPawn
 		};
 	}
 

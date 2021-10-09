@@ -16,15 +16,16 @@ public enum PieceType
 public class Piece : MonoBehaviour
 {
 
-	public bool isWhite;
-	public PieceType pieceType;
+	public bool white;
+	public PieceType type;
 	public bool selected = false;
 	public List<Vector2> moveList = new List<Vector2>();
+	public Vector3 oldPosition;
 	public int moveCount = 0;
+	public CastleData? castleData = null;
 
 	private GameManager _gameManager;
 	private Vector3 _mousePosition;
-	private Vector3 _oldPosition;
 	private bool _toPassant = false;
 
 	public void Start()
@@ -37,9 +38,9 @@ public class Piece : MonoBehaviour
 	{
 		// Save the old piece position
 		var piecePosition = transform.position;
-		_oldPosition = piecePosition;
+		oldPosition = piecePosition;
 
-		if (isWhite == _gameManager.whiteTurn)
+		if (white == _gameManager.whiteTurn)
 		{
 			// Unselect all other pieces
 			_gameManager.board.ClearHighlights();
@@ -74,13 +75,13 @@ public class Piece : MonoBehaviour
 			// Figure out potential moves
 			var moves = new List<Vector2>();
 
-			switch (pieceType)
+			switch (type)
 			{
 				case PieceType.Pawn:
-					var forwardOne = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? isWhite ? 1 : -1 : isWhite ? -1 : 1));
+					var forwardOne = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? white ? 1 : -1 : white ? -1 : 1));
 					var forwardOneObstructed = false;
 
-					var forwardTwo = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? isWhite ? 2 : -2 : isWhite ? -2 : 2));
+					var forwardTwo = new Vector2(piecePosition.x, piecePosition.y + (_gameManager.whiteStarts ? white ? 2 : -2 : white ? -2 : 2));
 					var forwardTwoObstructed = false;
 
 					foreach (var piece in allPieces)
@@ -110,7 +111,7 @@ public class Piece : MonoBehaviour
 					}
 
 					// Offer the option to take pieces that are diagonally nearby
-					if (_gameManager.whiteStarts == isWhite)
+					if (_gameManager.whiteStarts == white)
 					{
 						var topLeft = DrawRay(Vector2.up + Vector2.left, 1, Color.magenta);
 						var topRight = DrawRay(Vector2.up + Vector2.right, 1, Color.magenta);
@@ -148,7 +149,7 @@ public class Piece : MonoBehaviour
 					// En Passant
 					var lastMove = _gameManager.GetHistoricalMove(1);
 
-					if (isWhite)
+					if (white)
 					{
 						var leftCast = DrawRay(Vector2.left, 1, Color.yellow);
 						var rightCast = DrawRay(Vector2.right, 1, Color.yellow);
@@ -157,7 +158,7 @@ public class Piece : MonoBehaviour
 						{
 							var enemyScript = leftCast.gameObject.GetComponent<Piece>();
 
-							if (!enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
+							if (!enemyScript.white && enemyScript.type == PieceType.Pawn)
 							{
 								var enemyPosition = (Vector2)leftCast.transform.position;
 
@@ -173,7 +174,7 @@ public class Piece : MonoBehaviour
 						{
 							var enemyScript = rightCast.gameObject.GetComponent<Piece>();
 
-							if (!enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
+							if (!enemyScript.white && enemyScript.type == PieceType.Pawn)
 							{
 								var enemyPosition = (Vector2)rightCast.transform.position;
 
@@ -194,7 +195,7 @@ public class Piece : MonoBehaviour
 						{
 							var enemyScript = leftCast.gameObject.GetComponent<Piece>();
 
-							if (enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
+							if (enemyScript.white && enemyScript.type == PieceType.Pawn)
 							{
 								var enemyPosition = (Vector2)leftCast.transform.position;
 
@@ -210,7 +211,7 @@ public class Piece : MonoBehaviour
 						{
 							var enemyScript = rightCast.gameObject.GetComponent<Piece>();
 
-							if (enemyScript.isWhite && enemyScript.pieceType == PieceType.Pawn)
+							if (enemyScript.white && enemyScript.type == PieceType.Pawn)
 							{
 								var enemyPosition = (Vector2)rightCast.transform.position;
 
@@ -233,7 +234,25 @@ public class Piece : MonoBehaviour
 					{
 						for (var j = -1; j <= 1; j++)
 						{
-							moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + j));
+							moves.Add(new Vector2(oldPosition.x + i, oldPosition.y + j));
+						}
+					}
+
+					// Castling
+					// todo: also can't castle through check, can't castle after check, can't castle out of check
+					foreach (var castleData in CanCastle())
+					{
+						if (castleData.canCastle)
+						{
+							if (castleData.Type == CastleType.Queenside)
+							{
+								moves.Add(new Vector2(castleData.Rook.transform.position.x, piecePosition.y));
+							}
+
+							if (castleData.Type == CastleType.Kingside)
+							{
+								moves.Add(new Vector2(castleData.Rook.transform.position.x, piecePosition.y));
+							}
 						}
 					}
 
@@ -243,18 +262,18 @@ public class Piece : MonoBehaviour
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
-						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x, oldPosition.y - i));
 
 						// Left/Right
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y));
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y));
 
 						// Vertical
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y - i));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y - i));
 					}
 
 					break;
@@ -263,10 +282,10 @@ public class Piece : MonoBehaviour
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Vertical
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y - i));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y - i));
 					}
 
 					break;
@@ -275,28 +294,26 @@ public class Piece : MonoBehaviour
 					for (var i = 0; i < _gameManager.board.size; i++)
 					{
 						// Forward/Backwards
-						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y + i));
-						moves.Add(new Vector2(_oldPosition.x, _oldPosition.y - i));
+						moves.Add(new Vector2(oldPosition.x, oldPosition.y + i));
+						moves.Add(new Vector2(oldPosition.x, oldPosition.y - i));
 
 						// Left/Right
-						moves.Add(new Vector2(_oldPosition.x + i, _oldPosition.y));
-						moves.Add(new Vector2(_oldPosition.x - i, _oldPosition.y));
-
-						// todo: Castling
+						moves.Add(new Vector2(oldPosition.x + i, oldPosition.y));
+						moves.Add(new Vector2(oldPosition.x - i, oldPosition.y));
 					}
 
 					break;
 
 				case PieceType.Knight:
 					// L
-					moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y + 2));
-					moves.Add(new Vector2(_oldPosition.x + 1, _oldPosition.y - 2));
-					moves.Add(new Vector2(_oldPosition.x + 2, _oldPosition.y + 1));
-					moves.Add(new Vector2(_oldPosition.x + 2, _oldPosition.y - 1));
-					moves.Add(new Vector2(_oldPosition.x - 1, _oldPosition.y + 2));
-					moves.Add(new Vector2(_oldPosition.x - 1, _oldPosition.y - 2));
-					moves.Add(new Vector2(_oldPosition.x - 2, _oldPosition.y + 1));
-					moves.Add(new Vector2(_oldPosition.x - 2, _oldPosition.y - 1));
+					moves.Add(new Vector2(oldPosition.x + 1, oldPosition.y + 2));
+					moves.Add(new Vector2(oldPosition.x + 1, oldPosition.y - 2));
+					moves.Add(new Vector2(oldPosition.x + 2, oldPosition.y + 1));
+					moves.Add(new Vector2(oldPosition.x + 2, oldPosition.y - 1));
+					moves.Add(new Vector2(oldPosition.x - 1, oldPosition.y + 2));
+					moves.Add(new Vector2(oldPosition.x - 1, oldPosition.y - 2));
+					moves.Add(new Vector2(oldPosition.x - 2, oldPosition.y + 1));
+					moves.Add(new Vector2(oldPosition.x - 2, oldPosition.y - 1));
 					break;
 			}
 
@@ -307,14 +324,15 @@ public class Piece : MonoBehaviour
 				{
 					// Check if the move is overlapping any friendly pieces
 					var pieceScript = piece.GetComponent<Piece>();
-					var isMoveOverlapping = move == (Vector2)piece.transform.position && pieceScript.isWhite == isWhite;
+					var isMoveOverlapping = move == (Vector2)piece.transform.position && pieceScript.white == white;
+					var isCastle = pieceScript.type == PieceType.Rook && pieceScript.white == white;
 
 					// Check if the move is out of bounds
 					var isMoveOutOfBounds = move.x > _gameManager.board.size || move.x < 1 ||
 											move.y > _gameManager.board.size ||
 											move.y < 1;
 
-					if (isMoveOutOfBounds || isMoveOverlapping || move == (Vector2)_oldPosition)
+					if (isMoveOutOfBounds || (isMoveOverlapping && !isCastle) || move == (Vector2)oldPosition)
 					{
 						moves.Remove(move);
 					}
@@ -322,7 +340,7 @@ public class Piece : MonoBehaviour
 			}
 
 			// Remove any moves where the piece would have to jump
-			moves = pieceType switch
+			moves = type switch
 			{
 				PieceType.Rook => RookRayChecks(moves),
 				PieceType.Bishop => BishopRayChecks(moves),
@@ -341,15 +359,27 @@ public class Piece : MonoBehaviour
 
 					foreach (var piece in allPieces)
 					{
+						if (takes) break;
+
 						var script = piece.GetComponent<Piece>();
 
 						// If the piece being iterated over is an enemy
-						if (isWhite != script.isWhite)
+						if (white != script.white)
 						{
 							// If the piece is at the move, mark it as takeable
 							if ((Vector2)piece.transform.position == move)
 							{
 								takes = true;
+							}
+						}
+						else
+						{
+							foreach (var castleData in CanCastle(script))
+							{
+								if (castleData.canCastle && (Vector2)castleData.Rook.transform.position == move)
+								{
+									takes = true;
+								}
 							}
 						}
 					}
@@ -372,12 +402,12 @@ public class Piece : MonoBehaviour
 
 	public void OnMouseUp()
 	{
-		if (isWhite == _gameManager.whiteTurn)
+		if (white == _gameManager.whiteTurn)
 		{
 			// Figure out the piece's new position
 			var px = Mathf.Round(_mousePosition.x);
 			var py = Mathf.Round(_mousePosition.y);
-			var newPosition = new Vector3(px, py, _oldPosition.z);
+			var newPosition = new Vector3(px, py, oldPosition.z);
 
 			// Check:
 			// - the position is in bounds
@@ -385,22 +415,22 @@ public class Piece : MonoBehaviour
 			// - that it is the player's turn
 			// - that the move is legal
 			var isInBounds = (0 < px && px <= 8) && (0 < py && py <= 8);
-			var positionHasChanged = newPosition != _oldPosition;
-			var isPlayersTurn = (isWhite && _gameManager.whiteTurn) || (!isWhite && !_gameManager.whiteTurn);
+			var positionHasChanged = newPosition != oldPosition;
+			var isPlayersTurn = (white && _gameManager.whiteTurn) || (!white && !_gameManager.whiteTurn);
 			var isMoveLegal = moveList.Contains(new Vector2(newPosition.x, newPosition.y));
 
 			if (isInBounds && positionHasChanged && isPlayersTurn && isMoveLegal)
 			{
-				MakeMove(gameObject, _oldPosition, newPosition);
+				MakeMove(gameObject, oldPosition, newPosition);
 			}
 			else
 			{
-				transform.position = _oldPosition;
+				transform.position = oldPosition;
 			}
 		}
 		else
 		{
-			transform.position = _oldPosition;
+			transform.position = oldPosition;
 		}
 	}
 
@@ -409,97 +439,162 @@ public class Piece : MonoBehaviour
 		oldPosition.z = -2;
 		newPosition.z = -2;
 
+		var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
 		var pieceScript = piece.GetComponent<Piece>();
 		pieceScript.moveCount++;
 
-		// Move the piece
-		piece.transform.position = newPosition;
-
-		// Play the place sound
-		_gameManager.audioManager.PlayPlace();
-
-		// Append the move to notation
-		_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
-
-		// Clear all highlights and indicators
-		_gameManager.board.ClearHighlights();
-		_gameManager.board.ClearIndicators();
-
-		// Highlight the last move
-		_gameManager.board.HighlightLastMove();
-
-		// Promotion
-		if (pieceScript.pieceType == PieceType.Pawn)
+		// Castling
+		if (pieceScript.type == PieceType.King)
 		{
+			var success = false;
+
+			foreach (var castleData in CanCastle(pieceScript, true))
+			{
+				if (castleData.canCastle)
+				{
+					success = true;
+
+					// Play the place sound
+					_gameManager.audioManager.PlayPlace();
+
+					// Clear all highlights and indicators
+					_gameManager.board.ClearHighlights();
+					_gameManager.board.ClearIndicators();
+
+					switch (castleData.Type)
+					{
+						case CastleType.Kingside:
+							if (oldPosition.x < castleData.Rook.transform.position.x)
+							{
+								this.castleData = castleData;
+
+								// Append the move to notation
+								_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(pieceScript.oldPosition)}{_gameManager.GetAlgebraicNotation((Vector2)pieceScript.oldPosition + new Vector2(1, 0))}");
+
+								// Move the pieces
+								piece.transform.position = new Vector3(Mathf.Round(castleData.Rook.transform.position.x) - 1, castleData.Rook.transform.position.y, castleData.Rook.transform.position.z);
+								castleData.Rook.transform.position = new Vector3(Mathf.Round(castleData.Rook.transform.position.x) - 2, castleData.Rook.transform.position.y, castleData.Rook.transform.position.z);
+							}
+							break;
+						case CastleType.Queenside:
+							if (oldPosition.x > castleData.Rook.transform.position.x)
+							{
+								this.castleData = castleData;
+
+								// Append the move to notation
+								_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(pieceScript.oldPosition)}{_gameManager.GetAlgebraicNotation((Vector2)pieceScript.oldPosition - new Vector2(2, 0))}");
+
+								// Move the pieces
+								piece.transform.position = new Vector3(Mathf.Round(castleData.Rook.transform.position.x) + 2, castleData.Rook.transform.position.y, castleData.Rook.transform.position.z);
+								castleData.Rook.transform.position = new Vector3(Mathf.Round(castleData.Rook.transform.position.x) + 3, castleData.Rook.transform.position.y, castleData.Rook.transform.position.z);
+							}
+							break;
+					}
+				}
+			}
+
+			if (success)
+			{
+				_gameManager.board.HighlightLastMove();
+				pieceScript.moveList.Clear();
+				_gameManager.whiteTurn = !_gameManager.whiteTurn;
+				Stockfish(handleStockfish);
+			}
+		}
+		else
+		{
+			// Promotion
+			if (pieceScript.type == PieceType.Pawn)
+			{
+				// todo: allow for promotion to pieces other than a queen
+				if (pieceScript.white)
+				{
+					if (_gameManager.whiteStarts && newPosition.y == _gameManager.board.size || !_gameManager.whiteStarts && newPosition.y == 1)
+					{
+						_gameManager.pieces.InitPiece(piece, PieceType.Queen, white);
+					}
+				}
+				else
+				{
+					if (_gameManager.whiteStarts && newPosition.y == 1 || !_gameManager.whiteStarts && newPosition.y == _gameManager.board.size)
+					{
+						_gameManager.pieces.InitPiece(piece, PieceType.Queen, white);
+					}
+				}
+			}
+
+			// Play the place sound
+			_gameManager.audioManager.PlayPlace();
+
+			// Clear all highlights and indicators
+			_gameManager.board.ClearHighlights();
+			_gameManager.board.ClearIndicators();
+
+			// Move the piece
+			piece.transform.position = newPosition;
 			var position = piece.transform.position;
 
-			// todo: allow for promotion to pieces other than a queen
-			if (pieceScript.isWhite)
+			// Append the move to notation
+			_gameManager.moveNotations.Add($"{_gameManager.GetAlgebraicNotation(oldPosition)}{_gameManager.GetAlgebraicNotation(newPosition)}");
+
+			// Highlight the last move
+			_gameManager.board.HighlightLastMove();
+
+			// Manage the taking of pieces!
+			foreach (var p in allPieces)
 			{
-				if (_gameManager.whiteStarts && position.y == _gameManager.board.size || !_gameManager.whiteStarts && position.y == 1)
+				var script = p.GetComponent<Piece>();
+
+				// En Passant
+				if (script._toPassant)
 				{
-					_gameManager.pieces.InitPiece(piece, PieceType.Queen, isWhite);
+					if (script.white && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? -1 : 1)))
+					{
+						Destroy(p);
+						return;
+					}
+
+					if (!script.white && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? 1 : -1)))
+					{
+						Destroy(p);
+						return;
+					}
+
+					script._toPassant = false;
 				}
-			}
-			else
-			{
-				if (_gameManager.whiteStarts && position.y == 1 || !_gameManager.whiteStarts && position.y == _gameManager.board.size)
+
+				// Ensure that the piece does not delete itself
+				if (p.transform.position != position || p == piece) continue;
+
+				// Protect pieces from being taken by pieces of their own colour
+				if (script.white == pieceScript.white)
 				{
-					_gameManager.pieces.InitPiece(piece, PieceType.Queen, isWhite);
-				}
-			}
-		}
-
-		// Manage the taking of pieces!
-		var allPieces = GameObject.FindGameObjectsWithTag("Pieces");
-
-		foreach (var p in allPieces)
-		{
-			var script = p.GetComponent<Piece>();
-
-			// En Passant
-			if (script._toPassant)
-			{
-				if (script.isWhite && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? -1 : 1)))
-				{
-					Destroy(p);
+					piece.transform.position = oldPosition;
 					return;
 				}
 
-				if (!script.isWhite && (newPosition.y == p.transform.position.y + (_gameManager.whiteStarts ? 1 : -1)))
-				{
-					Destroy(p);
-					return;
-				}
-
-				script._toPassant = false;
+				Destroy(p);
 			}
 
-			// Ensure that the piece does not delete itself
-			if (p.transform.position != piece.transform.position || p == piece) continue;
+			// Clear the move list
+			pieceScript.moveList.Clear();
 
-			// Protect pieces from being taken by pieces of their own colour
-			if (script.isWhite == pieceScript.isWhite)
-			{
-				piece.transform.position = oldPosition;
-				return;
-			}
-
-			Destroy(p);
+			// Invert the turn variable
+			_gameManager.whiteTurn = !_gameManager.whiteTurn;
+			Stockfish(handleStockfish);
 		}
+	}
 
-		// Clear the move list
-		pieceScript.moveList.Clear();
-
-		// Invert the turn variable
-		_gameManager.whiteTurn = !_gameManager.whiteTurn;
+	private void Stockfish(bool run)
+	{
+		var pieces = GameObject.FindGameObjectsWithTag("Pieces");
 
 		// Handle Stockfish's move
-		if (_gameManager.stockfish.isEnabled && handleStockfish && _gameManager.whiteTurn == _gameManager.stockfish.isWhite)
+		if (run && _gameManager.stockfish.isEnabled && _gameManager.whiteTurn == _gameManager.stockfish.isWhite)
 		{
 			var bestMove = _gameManager.stockfish.GetBestMove();
 
-			foreach (var p in allPieces)
+			foreach (var p in pieces)
 			{
 				if ((Vector2)p.transform.position == bestMove.From)
 				{
@@ -509,14 +604,14 @@ public class Piece : MonoBehaviour
 		}
 	}
 
-	private Collider2D DrawRay(Vector2 direction, float distance, Color color)
+	private Collider2D DrawRay(Vector2 direction, float distance, Color color, Piece piece = null)
 	{
 		// Disable the collider
 		var collider = gameObject.GetComponent<BoxCollider2D>();
 		collider.enabled = false;
 
 		// Draw the ray
-		var position = transform.position;
+		var position = piece != null ? piece.transform.position : transform.position;
 		var hit = Physics2D.Raycast(position, direction, distance);
 		if (_gameManager.pieces.drawRays) Debug.DrawRay(position, direction * distance, color, 3);
 
@@ -658,7 +753,7 @@ public class Piece : MonoBehaviour
 				}
 
 				// Add back the collided position to the moves, as it has to be capturable
-				if (isWhite != ray.gameObject.GetComponent<Piece>().isWhite) moves.Add(collidedPosition);
+				if (white != ray.gameObject.GetComponent<Piece>().white) moves.Add(collidedPosition);
 			}
 		}
 
@@ -671,5 +766,56 @@ public class Piece : MonoBehaviour
 		moves = BishopRayChecks(moves);
 
 		return moves;
+	}
+
+	private List<CastleData> CanCastle(Piece p = null, bool isMove = false)
+	{
+		var data = new List<CastleData>();
+		var piece = p == null ? GetComponent<Piece>() : p;
+		var position = piece.oldPosition;
+		var whiteInCastlePosition = white && (_gameManager.whiteStarts && position.y == 1 || !_gameManager.whiteStarts && position.y == _gameManager.board.size);
+		var blackInCastlePosition = !white && (_gameManager.whiteStarts && position.y == _gameManager.board.size || !_gameManager.whiteStarts && position.y == 1);
+		var inCastlePosition = (whiteInCastlePosition || blackInCastlePosition);
+
+		if (inCastlePosition && piece.type == PieceType.King && piece.moveCount == (isMove ? 1 : 0))
+		{
+			var queenSide = DrawRay(Vector2.left, _gameManager.board.size / 2, Color.red, piece);
+			var kingSide = DrawRay(Vector2.right, _gameManager.board.size / 2, Color.blue, piece);
+
+			if (queenSide != null)
+			{
+				var collidedScript = queenSide.GetComponent<Piece>();
+
+				if (collidedScript.white == piece.white && collidedScript.type == PieceType.Rook && castleData == null && collidedScript.moveCount == 0)
+				{
+					data.Add(new CastleData(true, CastleType.Queenside, queenSide.gameObject, piece.gameObject));
+				}
+				else
+				{
+					data.Add(new CastleData(false, CastleType.Queenside, null, null));
+				}
+			}
+
+			if (kingSide != null)
+			{
+				var collidedScript = kingSide.GetComponent<Piece>();
+
+				if (collidedScript.white == piece.white && collidedScript.type == PieceType.Rook && piece.castleData == null && collidedScript.moveCount == 0)
+				{
+					data.Add(new CastleData(true, CastleType.Kingside, kingSide.gameObject, piece.gameObject));
+				}
+				else
+				{
+					data.Add(new CastleData(false, CastleType.Kingside, null, null));
+				}
+			}
+		}
+		else
+		{
+			data.Add(new CastleData(false, CastleType.Kingside, null, null));
+			data.Add(new CastleData(false, CastleType.Queenside, null, null));
+		}
+
+		return data;
 	}
 }
